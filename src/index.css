@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 270 30% 8%;
+    --foreground: 30 15% 88%;
+    --card: 270 25% 12%;
+    --card-foreground: 30 15% 88%;
+    --popover: 270 25% 10%;
+    --popover-foreground: 30 15% 88%;
+    --primary: 42 75% 65%;
+    --primary-foreground: 270 30% 8%;
+    --secondary: 270 20% 20%;
+    --secondary-foreground: 30 15% 88%;
+    --muted: 270 15% 18%;
+    --muted-foreground: 30 10% 55%;
+    --accent: 270 30% 22%;
+    --accent-foreground: 42 75% 65%;
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 270 20% 18%;
+    --input: 270 20% 16%;
+    --ring: 42 75% 65%;
+    --radius: 0.75rem;
+
+    /* Custom theme colors */
+    --gold: 42 75% 65%;
+    --gold-glow: 42 80% 75%;
+    --blood: 0 72% 55%;
+    --blood-dark: 0 60% 35%;
+    --surface: 270 25% 14%;
+    --surface-hover: 270 25% 18%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(100, 50, 150, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(240, 192, 96, 0.04) 0%, transparent 40%);
+    min-height: 100vh;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(270 20% 25%);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(270 20% 35%);
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-card/90 backdrop-blur-sm border border-border/50 rounded-lg shadow-lg;
+  }
+
+  .gold-text {
+    @apply text-gold font-semibold;
+    text-shadow: 0 0 20px rgba(240, 192, 96, 0.3);
+  }
+
+  .blood-text {
+    @apply text-blood font-semibold;
+    text-shadow: 0 0 15px rgba(224, 64, 64, 0.3);
+  }
+
+  .moon-glow {
+    filter: drop-shadow(0 0 20px rgba(240, 192, 96, 0.4));
+    animation: moon-glow-pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes moon-glow-pulse {
+    0%, 100% { filter: drop-shadow(0 0 20px rgba(240, 192, 96, 0.4)); }
+    50% { filter: drop-shadow(0 0 35px rgba(240, 192, 96, 0.7)); }
+  }
+
+  .phase-transition {
+    @apply transition-all duration-500 ease-in-out;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
