@@ -110,7 +110,8 @@ export async function getAIAction(
         }
       }
     } catch (e: any) {
-      fullContent = `（${player.name}沉默不语...）`
+      console.error(`AI 发言失败 (${player.name}):`, e.message || e)
+      fullContent = `（${player.name}沉默不语... ${e.message?.slice(0, 50) || '未知错误'}）`
     }
     return { type: 'speech', content: fullContent.slice(0, 100) }
   }
@@ -135,7 +136,7 @@ export async function getAIAction(
     }
     return parseActionResponse(response, phase, player)
   } catch (e: any) {
-    console.error(`AI 调用失败 (${player.name}):`, e)
+    console.error(`AI 行动失败 (${player.name}):`, e.message || e)
     return getDefaultAction(phase, player, alivePlayers)
   }
 }
