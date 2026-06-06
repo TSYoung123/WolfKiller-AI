@@ -68,7 +68,7 @@ export function NightActionPanel() {
   const getTargets = () => {
     if (!humanPlayer) return alivePlayers
     if (currentPhase === 'werewolf_turn')
-      return alivePlayers.filter(p => p.role !== 'werewolf' && p.id !== humanPlayer.id)
+      return alivePlayers.filter(p => p.id !== humanPlayer.id)
     if (currentPhase === 'witch_turn' && witchAction === 'save') {
       // 解药只能救今晚被杀的人
       if (nightResult.killedId === null) return []
