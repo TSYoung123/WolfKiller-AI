@@ -144,8 +144,16 @@ export default function Game() {
     navigate('/')
   }
 
-  // 夜晚行动阶段（人狼/预言家/女巫/猎人）
-  const isNightActionPhase = ['werewolf_turn', 'seer_turn', 'witch_turn', 'hunter_shot'].includes(phase)
+  // 夜晚行动阶段（人狼/预言家/女巫/猎人）—— 仅当人类玩家拥有对应身份时才显示面板
+  const PHASE_ROLE_MAP: Record<string, string> = {
+    werewolf_turn: 'werewolf',
+    seer_turn: 'seer',
+    witch_turn: 'witch',
+    hunter_shot: 'hunter',
+  }
+  const isNightActionPhase = phase in PHASE_ROLE_MAP
+  const humanPlayer = players.find(p => !p.isAI)
+  const isHumanNightAction = isNightActionPhase && humanPlayer?.role === PHASE_ROLE_MAP[phase]
 
   // ========== 布局计算 ==========
 
@@ -186,7 +194,7 @@ export default function Game() {
         <div className="flex-1 flex flex-col min-w-0 gap-2">
           {phase === 'werewolf_recognize' ? (
             <WerewolfRecognizePanel />
-          ) : isNightActionPhase && waitingForInput ? (
+          ) : isHumanNightAction && waitingForInput ? (
             <NightActionPanel />
           ) : phase === 'vote_start' && waitingForInput ? (
             <VotePanel />
