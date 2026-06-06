@@ -11,6 +11,7 @@ import { ToastContainer, toast } from '@/components/ui/toast'
 import { Button } from '@/components/ui/button'
 import { X, Pause, Play, SkipForward } from 'lucide-react'
 import { soundManager } from '@/lib/SoundManager'
+import { useT } from '@/store/i18nStore'
 
 /**
  * 游戏页面 - 主游戏界面
@@ -37,6 +38,7 @@ export default function Game() {
   const [isStarted, setIsStarted] = useState(false)
   /** 退出确认弹窗 */
   const [showExitConfirm, setShowExitConfirm] = useState(false)
+  const t = useT()
 
   // 从全局状态获取游戏数据
   const {
@@ -65,7 +67,7 @@ export default function Game() {
         },
         onError: (err) => {
           console.error('Game error:', err)
-          toast('游戏出错: ' + err, 'error')
+          toast(t('game.error') + ': ' + err, 'error')
         },
       })
       engineRef.current = engine
@@ -148,9 +150,9 @@ export default function Game() {
 
   // ========== 速度档位配置 ==========
   const speedOptions = [
-    { value: 2000, label: '▶▶', title: '正常速度' },
-    { value: 1000, label: '▶', title: '快速' },
-    { value: 500,  label: '⚡', title: '极速' },
+    { value: 2000, label: '▶▶', title: t('game.normalSpeed') },
+    { value: 1000, label: '▶', title: t('game.fast') },
+    { value: 500,  label: '⚡', title: t('game.ultraFast') },
   ]
 
   return (
@@ -170,7 +172,7 @@ export default function Game() {
 
         {/* 左列：前半数玩家 */}
         <div className="w-[200px] shrink-0 flex flex-col">
-          <div className="text-[10px] text-muted-foreground/50 uppercase tracking-widest text-center mb-1.5">左侧</div>
+          <div className="text-[10px] text-muted-foreground/50 uppercase tracking-widest text-center mb-1.5">{t('game.left')}</div>
           <PlayerColumn players={leftPlayers} side="left" />
         </div>
 
@@ -188,7 +190,7 @@ export default function Game() {
               className="rounded-full gap-1.5 text-muted-foreground hover:text-gold hover:border-gold/30"
             >
               {isPaused ? <Play className="h-3.5 w-3.5" /> : <Pause className="h-3.5 w-3.5" />}
-              {isPaused ? '继续' : '暂停'}
+              {isPaused ? t('game.resume') : t('game.pause')}
             </Button>
 
             {/* 速度档位选择 */}
@@ -217,14 +219,14 @@ export default function Game() {
               className="rounded-full gap-1.5 text-muted-foreground hover:text-blood hover:border-blood/30"
             >
               <SkipForward className="h-3.5 w-3.5" />
-              快进3s
+              {t('game.fastForward')}
             </Button>
           </div>
         </div>
 
         {/* 右列：后半数玩家 */}
         <div className="w-[200px] shrink-0 flex flex-col">
-          <div className="text-[10px] text-muted-foreground/50 uppercase tracking-widest text-center mb-1.5">右侧</div>
+          <div className="text-[10px] text-muted-foreground/50 uppercase tracking-widest text-center mb-1.5">{t('game.right')}</div>
           <PlayerColumn players={rightPlayers} side="right" />
         </div>
       </div>
@@ -248,14 +250,14 @@ export default function Game() {
       {showExitConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="glass-card p-6 max-w-sm w-full mx-4 text-center">
-            <p className="text-lg font-semibold mb-2">确认退出？</p>
-            <p className="text-sm text-muted-foreground mb-6">当前对局进度将不会保存</p>
+            <p className="text-lg font-semibold mb-2">{t('game.confirmExit')}</p>
+            <p className="text-sm text-muted-foreground mb-6">{t('game.exitWarning')}</p>
             <div className="flex gap-3 justify-center">
               <Button variant="outline" size="sm" className="rounded-full px-5" onClick={() => setShowExitConfirm(false)}>
-                继续游戏
+                {t('game.continueGame')}
               </Button>
               <Button variant="blood" size="sm" className="rounded-full px-5" onClick={handleExit}>
-                确认退出
+                {t('game.confirmExitBtn')}
               </Button>
             </div>
           </div>

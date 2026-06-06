@@ -7,6 +7,7 @@ import { useGameStore } from '@/store/gameStore'
 import { useConfigStore } from '@/store/configStore'
 import { Sparkles, Rocket, Settings, Theater, Bot } from 'lucide-react'
 import { soundManager } from '@/lib/SoundManager'
+import { useT } from '@/store/i18nStore'
 
 // 星星类型：普通闪烁 / 漂浮 / 流星
 function generateStars() {
@@ -44,6 +45,7 @@ export default function Home() {
   const navigate = useNavigate()
   const { history, loadHistory, initGame } = useGameStore()
   const { loadFromStorage } = useConfigStore()
+  const t = useT()
 
   useEffect(() => {
     loadHistory()
@@ -76,7 +78,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden page-enter">
       {/* 设置按钮 */}
       <button
         onClick={() => navigate('/settings')}
@@ -153,10 +155,10 @@ export default function Home() {
 
       {/* Title */}
       <h1 className="font-title text-5xl md:text-6xl gold-text mb-2 text-center z-10">
-        狼人杀 AI
+        {t('home.title')}
       </h1>
       <p className="text-muted-foreground mb-8 text-center z-10 text-sm">
-        基于大语言模型的狼人杀博弈游戏
+        {t('home.subtitle')}
       </p>
 
       {/* Mode buttons */}
@@ -165,49 +167,49 @@ export default function Home() {
           variant="gold"
           size="lg"
           onClick={handleQuickStart}
-          className="min-w-[180px] rounded-full gap-2"
+          className="min-w-[180px] rounded-full gap-2 press-feedback"
         >
           <Rocket className="h-4 w-4" />
-          一键开始
+          {t('home.quickStart')}
         </Button>
         <Button
           variant="gold"
           size="lg"
           onClick={() => navigate('/config?mode=human-ai')}
-          className="min-w-[180px] rounded-full opacity-80 hover:opacity-100 transition-opacity duration-200"
+          className="min-w-[180px] rounded-full opacity-80 hover:opacity-100 transition-opacity duration-200 press-feedback"
         >
           <Theater className="h-4 w-4 mr-1" />
-          开始游戏
-          <span className="ml-1 text-xs opacity-70">人机对战</span>
+          {t('home.startGame')}
+          <span className="ml-1 text-xs opacity-70">{t('home.humanVsAI')}</span>
         </Button>
         <Button
           variant="blood"
           size="lg"
           onClick={() => navigate('/config?mode=ai-only')}
-          className="min-w-[180px] rounded-full hover:brightness-110 transition-all duration-200"
+          className="min-w-[180px] rounded-full hover:brightness-110 transition-all duration-200 press-feedback"
         >
           <Bot className="h-4 w-4 mr-1" />
-          赛博斗蛐蛐
-          <span className="ml-1 text-xs opacity-70">纯AI观战</span>
+          {t('home.cyberBattle')}
+          <span className="ml-1 text-xs opacity-70">{t('home.aiOnly')}</span>
         </Button>
       </div>
 
       {/* Sub-text */}
       <p className="text-[11px] text-muted-foreground/50 mb-10 z-10">
-        一键开始使用内置模型，其他模式可在配置页选择
+        {t('home.quickStartTip')}
       </p>
 
       {/* History */}
       {history.length > 0 && (
         <div className="w-full max-w-lg z-10">
-          <h2 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">历史对局</h2>
+          <h2 className="text-sm font-semibold mb-3 text-muted-foreground uppercase tracking-wider">{t('home.history')}</h2>
           <div className="space-y-2">
             {history.slice(0, 5).map(game => (
               <Card key={game.id} className="p-3">
                 <CardContent className="flex items-center justify-between">
                   <div>
                     <p className="text-xs">
-                      {game.date} · {game.playerCount}人 · {game.rounds}轮
+                      {game.date} · {game.playerCount}{t('home.players')} · {game.rounds}{t('home.rounds')}
                     </p>
                     <div className="flex gap-1 mt-1">
                       {game.models.map((m, i) => (
@@ -216,7 +218,7 @@ export default function Home() {
                     </div>
                   </div>
                   <Badge variant={game.winner === 'villager' ? 'alive' : 'blood'}>
-                    {game.winner === 'villager' ? '好人胜' : '狼人胜'}
+                    {game.winner === 'villager' ? t('home.villagerWin') : t('home.werewolfWin')}
                   </Badge>
                 </CardContent>
               </Card>

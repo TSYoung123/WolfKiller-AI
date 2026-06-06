@@ -3,6 +3,7 @@ import type { GamePhase } from '@/engine/types'
 import { cn } from '@/lib/utils'
 import { Moon, Sun, Swords, Vote, Skull, Dice5 } from 'lucide-react'
 import { useGameStore } from '@/store/gameStore'
+import { useT } from '@/store/i18nStore'
 
 interface PhaseBarProps {
   round: number
@@ -26,6 +27,7 @@ export function PhaseBar({ round, phase, playerCount }: PhaseBarProps) {
   const isNight = nightPhases.includes(phase)
   const players = useGameStore(s => s.players)
   const humanPlayer = players.find(p => !p.isAI)
+  const t = useT()
 
   return (
     <div className={cn(
@@ -35,7 +37,7 @@ export function PhaseBar({ round, phase, playerCount }: PhaseBarProps) {
       <div className="flex items-center gap-2.5">
         {getPhaseIcon(phase)}
         <span className="font-medium text-sm">
-          第 {round} 天
+          {t('game.day', { round: String(round) })}
         </span>
         <span className="text-muted-foreground text-xs">·</span>
         <span className={cn(
@@ -55,7 +57,7 @@ export function PhaseBar({ round, phase, playerCount }: PhaseBarProps) {
           </div>
         )}
         <span className="text-xs text-muted-foreground">
-          {playerCount} 人局
+          {t('game.playerCount', { count: String(playerCount) })}
         </span>
       </div>
     </div>

@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import type { GamePhase, GameMode } from '@/engine/types'
 import { formatPhase } from '@/lib/utils'
 import { Bot, Moon, Clock, Swords, Eye, FlaskConical, Vote } from 'lucide-react'
+import { useT } from '@/store/i18nStore'
 
 interface ActionBarProps {
   phase: GamePhase
@@ -14,6 +15,7 @@ interface ActionBarProps {
 export function ActionBar({ phase, mode }: ActionBarProps) {
   const { waitingForInput, players, resolveInput, nightResult } = useGameStore()
   const [speechText, setSpeechText] = useState('')
+  const t = useT()
 
   const humanPlayer = players.find(p => !p.isAI)
   const alivePlayers = players.filter(p => p.isAlive)
@@ -24,7 +26,7 @@ export function ActionBar({ phase, mode }: ActionBarProps) {
       <div className="w-full py-3 px-6 border-t border-border/50 bg-card/50 backdrop-blur-sm">
         <div className="text-center text-sm text-muted-foreground flex items-center justify-center gap-1.5">
           <Bot className="h-4 w-4" />
-          赛博斗蛐蛐模式 - AI 自动博弈中
+          {t('action.cyberBattleMode')}
         </div>
       </div>
     )
@@ -41,7 +43,7 @@ export function ActionBar({ phase, mode }: ActionBarProps) {
       <div className="w-full py-3 px-6 border-t border-border/50 bg-card/50 backdrop-blur-sm">
         <div className="text-center text-sm text-muted-foreground flex items-center justify-center gap-1.5">
           {isNightPhase ? (
-            <><Moon className="h-4 w-4 text-indigo-400" /> 夜幕降临，等待中...</>
+            <><Moon className="h-4 w-4 text-indigo-400" /> {t('action.nightWaiting')}</>
           ) : (
             <><Clock className="h-4 w-4" /> {formatPhase(phase)}...</>
           )}
@@ -62,9 +64,9 @@ export function ActionBar({ phase, mode }: ActionBarProps) {
     return (
       <div className="w-full py-4 px-6 border-t border-border/50 bg-card/80 backdrop-blur-sm">
         <p className="text-sm text-gold mb-2 flex items-center gap-1.5">
-          {phase === 'werewolf_turn' && <><Swords className="h-4 w-4 text-red-400" /> 选择击杀目标</>}
-          {phase === 'seer_turn' && <><Eye className="h-4 w-4 text-blue-400" /> 选择查验目标</>}
-          {phase === 'witch_turn' && <><FlaskConical className="h-4 w-4 text-green-400" /> 选择用药</>}
+          {phase === 'werewolf_turn' && <><Swords className="h-4 w-4 text-red-400" /> {t('action.selectKillTarget')}</>}
+          {phase === 'seer_turn' && <><Eye className="h-4 w-4 text-blue-400" /> {t('action.selectSeerTarget')}</>}
+          {phase === 'witch_turn' && <><FlaskConical className="h-4 w-4 text-green-400" /> {t('action.selectMedicine')}</>}
         </p>
         <div className="flex flex-wrap gap-2">
           {targets.map(p => (
@@ -85,7 +87,7 @@ export function ActionBar({ phase, mode }: ActionBarProps) {
               onClick={() => resolveInput({ type: 'save', targetId: undefined })}
               className="rounded-full text-muted-foreground"
             >
-              不用药
+              {t('action.noMedicine')}
             </Button>
           )}
         </div>
@@ -99,7 +101,7 @@ export function ActionBar({ phase, mode }: ActionBarProps) {
       <div className="w-full py-4 px-6 border-t border-border/50 bg-card/80 backdrop-blur-sm">
         <div className="flex gap-2 max-w-2xl mx-auto">
           <Input
-            placeholder="输入你的发言..."
+            placeholder={t('action.speechPlaceholder')}
             value={speechText}
             onChange={e => setSpeechText(e.target.value)}
             maxLength={80}
@@ -121,11 +123,11 @@ export function ActionBar({ phase, mode }: ActionBarProps) {
             }}
             className="rounded-full px-5"
           >
-            发言
+            {t('action.speech')}
           </Button>
         </div>
         <p className="text-[10px] text-muted-foreground text-center mt-1">
-          {speechText.length}/80 字
+          {t('action.charCount', { count: String(speechText.length) })}
         </p>
       </div>
     )
@@ -137,7 +139,7 @@ export function ActionBar({ phase, mode }: ActionBarProps) {
     return (
       <div className="w-full py-4 px-6 border-t border-border/50 bg-card/80 backdrop-blur-sm">
         <p className="text-sm text-gold mb-2 text-center flex items-center justify-center gap-1.5">
-          <Vote className="h-4 w-4" /> 选择你要投票放逐的玩家
+          <Vote className="h-4 w-4" /> {t('action.selectVoteTarget')}
         </p>
         <div className="flex flex-wrap justify-center gap-2">
           {voteTargets.map(p => (
@@ -157,7 +159,7 @@ export function ActionBar({ phase, mode }: ActionBarProps) {
             onClick={() => resolveInput(null)}
             className="rounded-full text-muted-foreground"
           >
-            弃权
+            {t('action.abstain')}
           </Button>
         </div>
       </div>

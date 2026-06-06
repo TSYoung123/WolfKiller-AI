@@ -15,11 +15,13 @@ import { soundManager } from '@/lib/SoundManager'
 import {
   Eye, EyeOff, Plus, Trash2, Loader2, Zap, Check,
   Volume2, VolumeX, Music, Gamepad2, Server,
-  ChevronLeft, Play, RotateCcw,
+  ChevronLeft, Play, RotateCcw, Globe,
 } from 'lucide-react'
 import type { AIProvider } from '@/engine/types'
+import { useI18nStore, useT } from '@/store/i18nStore'
+import type { Language } from '@/store/i18nStore'
 
-type Tab = 'audio' | 'api'
+type Tab = 'audio' | 'api' | 'language'
 
 export default function Settings() {
   const navigate = useNavigate()
@@ -40,6 +42,9 @@ export default function Settings() {
   const [testing, setTesting] = useState<string | null>(null)
   const [tested, setTested] = useState<Record<string, boolean>>({})
 
+  const { language, setLanguage } = useI18nStore()
+  const t = useT()
+
   const handleTest = async (slotId: string) => {
     const slot = slots.find(s => s.id === slotId)
     if (!slot) return
@@ -47,10 +52,10 @@ export default function Settings() {
     try {
       const ok = await testConnection(slot.aiConfig)
       setTested(prev => ({ ...prev, [slotId]: ok }))
-      toast(ok ? '连接成功！' : '连接失败，请检查配置', ok ? 'success' : 'error')
+      toast(ok ? t('settings.connectionSuccess') : t('settings.connectionFailed'), ok ? 'success' : 'error')
     } catch {
       setTested(prev => ({ ...prev, [slotId]: false }))
-      toast('连接失败', 'error')
+      toast(t('settings.connectionError'), 'error')
     }
     setTesting(null)
   }
@@ -59,20 +64,21 @@ export default function Settings() {
     .filter(([key]) => key !== 'mock' && key !== 'built-in')
 
   const tabs = [
-    { key: 'audio' as const, label: '音效设置', icon: Volume2 },
-    { key: 'api' as const, label: 'API 设置', icon: Server },
+    { key: 'audio' as const, label: t('settings.audioTab'), icon: Volume2 },
+    { key: 'api' as const, label: t('settings.apiTab'), icon: Server },
+    { key: 'language' as const, label: t('settings.languageTab'), icon: Globe },
   ]
 
   return (
-    <div className="min-h-screen px-4 py-8 max-w-3xl mx-auto">
+    <div className="min-h-screen px-4 py-8 max-w-3xl mx-auto page-enter">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
             <ChevronLeft className="h-4 w-4 mr-1" />
-            返回
+            {t('common.back')}
           </Button>
-          <h1 className="font-title text-2xl gold-text">设置</h1>
+          <h1 className="font-title text-2xl gold-text">{t('settings.title')}</h1>
         </div>
       </div>
 
@@ -106,8 +112,8 @@ export default function Settings() {
                     {muted ? <VolumeX className="h-4 w-4 text-muted-foreground" /> : <Volume2 className="h-4 w-4 text-gold" />}
                   </div>
                   <div>
-                    <p className="font-medium text-sm">全局静音</p>
-                    <p className="text-xs text-muted-foreground">关闭所有音效和背景音乐</p>
+                    <p className="font-medium text-sm">{t('settings.globalMute')}</p>
+                    <p className="text-xs text-muted-foreground">{t('settings.globalMuteDesc')}</p>
                   </div>
                 </div>
                 <button
@@ -132,8 +138,8 @@ export default function Settings() {
                   <Music className="h-4 w-4 text-blue-400" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-sm">背景音乐</p>
-                  <p className="text-xs text-muted-foreground">游戏过程中的氛围音乐</p>
+                  <p className="font-medium text-sm">{t('settings.bgm')}</p>
+                  <p className="text-xs text-muted-foreground">{t('settings.bgmDesc')}</p>
                 </div>
                 <span className="text-sm font-mono text-gold tabular-nums w-10 text-right">
                   {Math.round(bgmVolume * 100)}%
@@ -150,21 +156,21 @@ export default function Settings() {
                   onClick={() => soundManager.playBGM('home')}
                   className="text-xs gap-1"
                 >
-                  <Play className="h-3 w-3" /> 试听首页
+                  <Play className="h-3 w-3" /> {t('settings.tryHome')}
                 </Button>
                 <Button
                   variant="outline" size="sm"
                   onClick={() => soundManager.playBGM('night')}
                   className="text-xs gap-1"
                 >
-                  <Play className="h-3 w-3" /> 试听夜晚
+                  <Play className="h-3 w-3" /> {t('settings.tryNight')}
                 </Button>
                 <Button
                   variant="outline" size="sm"
                   onClick={() => soundManager.stopBGM()}
                   className="text-xs gap-1"
                 >
-                  <RotateCcw className="h-3 w-3" /> 停止
+                  <RotateCcw className="h-3 w-3" /> {t('settings.stop')}
                 </Button>
               </div>
             </CardContent>
@@ -178,8 +184,8 @@ export default function Settings() {
                   <Gamepad2 className="h-4 w-4 text-purple-400" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-sm">游戏音效</p>
-                  <p className="text-xs text-muted-foreground">阶段切换、死亡、投票等音效</p>
+                  <p className="font-medium text-sm">{t('settings.sfx')}</p>
+                  <p className="text-xs text-muted-foreground">{t('settings.sfxDesc')}</p>
                 </div>
                 <span className="text-sm font-mono text-gold tabular-nums w-10 text-right">
                   {Math.round(sfxVolume * 100)}%
@@ -192,13 +198,13 @@ export default function Settings() {
               />
               <div className="flex flex-wrap gap-2 mt-3">
                 {[
-                  { label: '夜幕', sound: 'phase_night' as const },
-                  { label: '天亮', sound: 'phase_day' as const },
-                  { label: '投票', sound: 'phase_vote' as const },
-                  { label: '死亡', sound: 'death' as const },
-                  { label: '胜利', sound: 'win' as const },
-                  { label: '失败', sound: 'lose' as const },
-                  { label: '下注', sound: 'bet' as const },
+                  { label: t('settings.nightFall'), sound: 'phase_night' as const },
+                  { label: t('settings.dayBreak'), sound: 'phase_day' as const },
+                  { label: t('settings.vote'), sound: 'phase_vote' as const },
+                  { label: t('settings.death'), sound: 'death' as const },
+                  { label: t('settings.win'), sound: 'win' as const },
+                  { label: t('settings.lose'), sound: 'lose' as const },
+                  { label: t('settings.bet'), sound: 'bet' as const },
                 ].map(item => (
                   <Button
                     key={item.sound}
@@ -215,21 +221,55 @@ export default function Settings() {
         </div>
       )}
 
+      {/* ==================== 语言设置 Tab ==================== */}
+      {activeTab === 'language' && (
+        <div className="space-y-5 animate-fade-in">
+          <Card>
+            <CardContent className="pt-5 pb-5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-9 h-9 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                  <Globe className="h-4 w-4 text-emerald-400" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-sm">{t('settings.language')}</p>
+                  <p className="text-xs text-muted-foreground">{t('settings.languageDesc')}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                {(['zh', 'en'] as Language[]).map(lang => (
+                  <button
+                    key={lang}
+                    onClick={() => setLanguage(lang)}
+                    className={`flex-1 py-3 px-4 rounded-lg border text-sm font-medium transition-all ${
+                      language === lang
+                        ? 'border-gold bg-gold/10 text-gold'
+                        : 'border-border/40 hover:border-border/80 hover:bg-surface-hover text-muted-foreground'
+                    }`}
+                  >
+                    {lang === 'zh' ? '🇨🇳 中文' : '🇬🇧 English'}
+                  </button>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* ==================== API 设置 Tab ==================== */}
       {activeTab === 'api' && (
         <div className="space-y-5 animate-fade-in">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center justify-between text-base">
-                <span>自定义 API 配置</span>
+                <span>{t('settings.apiConfig')}</span>
                 <Badge variant="outline" className="text-xs">
-                  Key 仅存储在浏览器中
+                  {t('settings.apiConfigNote')}
                 </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-xs text-muted-foreground mb-4">
-                配置自定义 AI 模型的 API Key，用于替代内置模型。支持多个 AI 槽位。
+                {t('settings.apiConfigDesc')}
               </p>
 
               <div className="space-y-4">
@@ -238,7 +278,7 @@ export default function Settings() {
                   return (
                     <div key={slot.id} className="p-4 border border-border/50 rounded-lg space-y-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">AI 槽位 {index + 1}</span>
+                        <span className="text-sm font-medium">{t('settings.aiSlot')} {index + 1}</span>
                         <Button variant="ghost" size="sm" onClick={() => removeSlot(slot.id)}>
                           <Trash2 className="h-4 w-4 text-destructive" />
                         </Button>
@@ -270,7 +310,7 @@ export default function Settings() {
                       {/* Model + API Key */}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <label className="text-xs text-muted-foreground mb-1 block">模型</label>
+                          <label className="text-xs text-muted-foreground mb-1 block">{t('settings.model')}</label>
                           {providerConfig?.models.length > 0 ? (
                             <Select
                               value={slot.aiConfig.model}
@@ -279,14 +319,14 @@ export default function Settings() {
                             />
                           ) : (
                             <Input
-                              placeholder="输入模型名称"
+                              placeholder={t('settings.inputModelName')}
                               value={slot.aiConfig.model}
                               onChange={e => updateSlot(slot.id, { model: e.target.value })}
                             />
                           )}
                         </div>
                         <div>
-                          <label className="text-xs text-muted-foreground mb-1 block">API Key</label>
+                          <label className="text-xs text-muted-foreground mb-1 block">{t('settings.apiKey')}</label>
                           <div className="relative">
                             <Input
                               type={showKeys[slot.id] ? 'text' : 'password'}
@@ -308,7 +348,7 @@ export default function Settings() {
                       {/* Custom baseURL */}
                       {slot.aiConfig.provider === 'custom' && (
                         <div>
-                          <label className="text-xs text-muted-foreground mb-1 block">API 地址</label>
+                          <label className="text-xs text-muted-foreground mb-1 block">{t('settings.apiAddress')}</label>
                           <Input
                             placeholder="https://your-api.com/v1"
                             value={slot.aiConfig.baseURL || ''}
@@ -331,7 +371,7 @@ export default function Settings() {
                         ) : (
                           <Zap className="h-3 w-3 mr-1" />
                         )}
-                        测试连接
+                        {t('settings.testConnection')}
                       </Button>
                     </div>
                   )
@@ -343,7 +383,7 @@ export default function Settings() {
                   className="w-full"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  添加 AI 模型
+                  {t('settings.addModel')}
                 </Button>
               </div>
             </CardContent>

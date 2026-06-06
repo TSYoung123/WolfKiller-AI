@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { formatRole, getRoleEmoji } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import { useGameStore } from '@/store/gameStore'
+import { useT } from '@/store/i18nStore'
 
 interface PlayerListProps {
   players: Player[]
@@ -14,6 +15,7 @@ export function PlayerList({ players }: PlayerListProps) {
   const humanPlayer = players.find(p => !p.isAI)
   const mode = useGameStore(s => s.mode)
   const isSpectator = mode === 'ai-only'
+  const t = useT()
 
   // 是否应该显示该玩家的角色
   // 赛博斗蛐蛐模式：所有玩家角色可见（观众视角）
@@ -32,7 +34,7 @@ export function PlayerList({ players }: PlayerListProps) {
 
   return (
     <div className="glass-card p-3 h-full overflow-y-auto">
-      <h3 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">玩家列表</h3>
+      <h3 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wider">{t('playerList.title')}</h3>
 
       {/* Alive */}
       <div className="space-y-1 mb-3">
@@ -53,7 +55,7 @@ export function PlayerList({ players }: PlayerListProps) {
               <p className="text-sm font-medium truncate">
                 {player.id}号{!player.isAI ? ` ${player.name}` : ''}
                 {player.id === humanPlayer?.id && (
-                  <span className="ml-1 text-[10px] text-gold">(你)</span>
+                  <span className="ml-1 text-[10px] text-gold">{t('common.you')}</span>
                 )}
               </p>
               {showRole(player) && (
@@ -67,7 +69,7 @@ export function PlayerList({ players }: PlayerListProps) {
                 </p>
               )}
             </div>
-            <Badge variant="alive" className="text-[10px] shrink-0 px-1.5">存活</Badge>
+            <Badge variant="alive" className="text-[10px] shrink-0 px-1.5">{t('playerList.alive')}</Badge>
           </div>
         ))}
       </div>
@@ -75,7 +77,7 @@ export function PlayerList({ players }: PlayerListProps) {
       {/* Dead */}
       {deadPlayers.length > 0 && (
         <>
-          <h4 className="text-[10px] text-muted-foreground mb-1.5 mt-3 uppercase tracking-wider">已死亡</h4>
+          <h4 className="text-[10px] text-muted-foreground mb-1.5 mt-3 uppercase tracking-wider">{t('playerList.deceased')}</h4>
           <div className="space-y-1">
             {deadPlayers.map(player => (
               <div
@@ -96,7 +98,7 @@ export function PlayerList({ players }: PlayerListProps) {
                     </p>
                   )}
                 </div>
-                <Badge variant="dead" className="text-[10px] shrink-0 px-1.5">死亡</Badge>
+                <Badge variant="dead" className="text-[10px] shrink-0 px-1.5">{t('playerList.dead')}</Badge>
               </div>
             ))}
           </div>

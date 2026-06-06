@@ -1,6 +1,7 @@
 import { useGameStore } from '@/store/gameStore'
 import type { Player } from '@/engine/types'
 import { cn, getRoleEmoji, formatRole } from '@/lib/utils'
+import { useT } from '@/store/i18nStore'
 
 interface PlayerColumnProps {
   players: Player[]
@@ -13,6 +14,7 @@ export function PlayerColumn({ players, side }: PlayerColumnProps) {
   const allPlayers = useGameStore(s => s.players)
   const humanPlayer = allPlayers.find(p => !p.isAI)
   const isSpectator = mode === 'ai-only'
+  const t = useT()
 
   // Find the player currently active (last non-system message)
   const lastPlayerMsg = [...messages].reverse().find(m => m.playerId !== 0)
@@ -93,7 +95,7 @@ export function PlayerColumn({ players, side }: PlayerColumnProps) {
                     {player.id}号{!player.isAI ? ` ${player.name}` : ''}
                   </p>
                   {isHuman && (
-                    <span className="text-[9px] text-gold/70 shrink-0">(你)</span>
+                    <span className="text-[9px] text-gold/70 shrink-0">{t('common.you')}</span>
                   )}
                 </div>
 
@@ -112,7 +114,7 @@ export function PlayerColumn({ players, side }: PlayerColumnProps) {
                 {/* Thinking status text */}
                 {isPlayerThinking && player.isAlive && (
                   <p className="text-[9px] text-purple-400/70 animate-pulse">
-                    💭 思考中...
+                    💭 {t('player.thinking')}
                   </p>
                 )}
               </div>

@@ -7,10 +7,12 @@ import { useGameStore } from '@/store/gameStore'
 import { formatRole, getRoleEmoji } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import { Trophy, RotateCcw, Home, Dice5, CheckCircle2, XCircle } from 'lucide-react'
+import { useT, useI18nStore } from '@/store/i18nStore'
 
 export default function Result() {
   const navigate = useNavigate()
   const { players, winner, round, messages, mode, betPlayerId, betResult, saveHistory } = useGameStore()
+  const t = useT()
 
   const savedRef = useRef(false)
 
@@ -25,7 +27,7 @@ export default function Result() {
 
     const game = {
       id: Date.now().toString(),
-      date: new Date().toLocaleDateString('zh-CN'),
+      date: new Date().toLocaleDateString(useI18nStore.getState().language === 'zh' ? 'zh-CN' : 'en-US'),
       mode,
       playerCount: players.length,
       winner,
@@ -45,7 +47,7 @@ export default function Result() {
   }, [])
 
   return (
-    <div className="min-h-screen flex flex-col items-center px-4 py-8">
+    <div className="min-h-screen flex flex-col items-center px-4 py-8 page-enter">
       {/* Winner announcement */}
       <div className="text-center mb-8 animate-fade-in">
         <div className={cn(
@@ -61,10 +63,10 @@ export default function Result() {
           "font-title text-4xl md:text-5xl mb-2",
           winner === 'villager' ? 'gold-text' : 'blood-text'
         )}>
-          {winner === 'villager' ? '好人阵营胜利！' : '狼人阵营胜利！'}
+          {winner === 'villager' ? t('result.villagerWin') : t('result.werewolfWin')}
         </h1>
         <p className="text-muted-foreground text-sm">
-          游戏在第 {round} 轮结束
+          {t('result.gameEnded', { round: String(round) })}
         </p>
       </div>
 
@@ -89,15 +91,15 @@ export default function Result() {
                 <div className="flex items-center gap-2 mb-1">
                   <Dice5 className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm font-semibold">
-                    {betResult ? '🎉 下注猜中！' : '❌ 下注未中'}
+                    {betResult ? t('result.betWin') : t('result.betLose')}
                   </span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  你下注了 <span className="text-foreground font-medium">{betPlayerId}号 {players.find(p => p.id === betPlayerId)?.name}</span>
+                  {t('result.betOn')} <span className="text-foreground font-medium">{betPlayerId}号 {players.find(p => p.id === betPlayerId)?.name}</span>
                   {' · '}
-                  该玩家角色为 <span className="text-foreground font-medium">{players.find(p => p.id === betPlayerId)?.role === 'werewolf' ? '🐺 狼人' : '👤 好人'}</span>
+                  {t('result.playerRole')} <span className="text-foreground font-medium">{players.find(p => p.id === betPlayerId)?.role === 'werewolf' ? '🐺 ' + t('role.werewolf') : '👤 ' + t('role.villager')}</span>
                   {' · '}
-                  {betResult ? '阵营获胜！' : '阵营落败'}
+                  {betResult ? t('result.factionWin') : t('result.factionLose')}
                 </p>
               </div>
             </div>
@@ -108,7 +110,7 @@ export default function Result() {
       {/* Role reveal table */}
       <Card className="w-full max-w-2xl mb-6">
         <CardHeader>
-          <CardTitle className="text-base">身份揭晓</CardTitle>
+          <CardTitle className="text-base">{t('result.roleReveal')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-1.5">
@@ -130,10 +132,10 @@ export default function Result() {
                     <p className="text-sm font-medium">
                       {player.id}号{!player.isAI ? ` · ${player.name}` : ''}
                       {!player.isAlive && (
-                        <span className="ml-1.5 text-[10px] text-muted-foreground">(已死亡)</span>
+                        <span className="ml-1.5 text-[10px] text-muted-foreground">{t('result.deceased')}</span>
                       )}
                       {betPlayerId === player.id && (
-                        <span className="ml-1.5 text-[10px] text-gold">🎰 下注</span>
+                        <span className="ml-1.5 text-[10px] text-gold">🎰 {t('result.bet')}</span>
                       )}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -145,7 +147,7 @@ export default function Result() {
                   </div>
                 </div>
                 <Badge variant={player.isAlive ? 'alive' : 'dead'}>
-                  {player.isAlive ? '存活' : '死亡'}
+                  {player.isAlive ? t('result.alive') : t('result.dead')}
                 </Badge>
               </div>
             ))}
@@ -157,14 +159,14 @@ export default function Result() {
       {messages.length > 0 && (
         <Card className="w-full max-w-2xl mb-6">
           <CardHeader>
-            <CardTitle className="text-base">对局回顾</CardTitle>
+            <CardTitle className="text-base">{t('result.review')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-1.5 max-h-48 overflow-y-auto">
               {messages.filter(m => m.playerId !== 0).slice(-10).map((msg, i) => (
                 <div key={i} className="text-xs flex gap-1.5">
                   <span className="text-gold font-medium shrink-0">{msg.playerName}</span>
-                  <span className="text-muted-foreground/60 shrink-0">第{msg.round}天:</span>
+                  <span className="text-muted-foreground/60 shrink-0">{t('chat.day', { round: String(msg.round) })}:</span>
                   <span className="text-foreground/80 truncate">{msg.content}</span>
                 </div>
               ))}
@@ -175,13 +177,13 @@ export default function Result() {
 
       {/* Actions */}
       <div className="flex gap-3">
-        <Button variant="gold" size="lg" className="rounded-full gap-2" onClick={() => navigate('/config')}>
+        <Button variant="gold" size="lg" className="rounded-full gap-2 press-feedback" onClick={() => navigate('/config')}>
           <RotateCcw className="h-4 w-4" />
-          再来一局
+          {t('result.playAgain')}
         </Button>
-        <Button variant="outline" size="lg" className="rounded-full gap-2" onClick={() => navigate('/')}>
+        <Button variant="outline" size="lg" className="rounded-full gap-2 press-feedback" onClick={() => navigate('/')}>
           <Home className="h-4 w-4" />
-          返回首页
+          {t('result.backHome')}
         </Button>
       </div>
     </div>

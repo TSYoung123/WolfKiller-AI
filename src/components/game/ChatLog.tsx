@@ -3,6 +3,7 @@ import type { GameMessage } from '@/engine/types'
 import { cn, getRoleEmoji, formatRole } from '@/lib/utils'
 import { useGameStore } from '@/store/gameStore'
 import { Moon, Sun, Skull, Vote, AlertTriangle, Swords, Brain, Sparkles } from 'lucide-react'
+import { useT } from '@/store/i18nStore'
 
 interface ChatLogProps {
   messages: GameMessage[]
@@ -42,6 +43,7 @@ export function ChatLog({ messages }: ChatLogProps) {
   const mode = useGameStore(s => s.mode)
   const players = useGameStore(s => s.players)
   const isSpectator = mode === 'ai-only'
+  const t = useT()
 
   // Determine which side a player belongs to (left or right column)
   const half = Math.ceil(players.length / 2)
@@ -58,7 +60,7 @@ export function ChatLog({ messages }: ChatLogProps) {
       {messages.length === 0 && (
         <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-3">
           <Moon className="h-8 w-8 opacity-30 animate-pulse" />
-          <p className="text-sm">等待游戏开始...</p>
+          <p className="text-sm">{t('chat.waiting')}</p>
         </div>
       )}
 
@@ -148,7 +150,7 @@ export function ChatLog({ messages }: ChatLogProps) {
                     </span>
                   )}
                   <span className="text-[9px] text-muted-foreground/40">
-                    第{msg.round}天
+                    {t('chat.day', { round: String(msg.round) })}
                   </span>
                 </div>
 
@@ -165,7 +167,7 @@ export function ChatLog({ messages }: ChatLogProps) {
                       <span className="inline-block w-1.5 h-1.5 bg-gold rounded-full animate-bounce" />
                       <span className="inline-block w-1.5 h-1.5 bg-gold rounded-full animate-bounce [animation-delay:100ms]" />
                       <span className="inline-block w-1.5 h-1.5 bg-gold rounded-full animate-bounce [animation-delay:200ms]" />
-                      <span className="ml-1 text-xs">思考中</span>
+                      <span className="ml-1 text-xs">{t('chat.thinking')}</span>
                     </span>
                   )}
                 </div>

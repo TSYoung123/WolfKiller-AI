@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Trophy, Dice5 } from 'lucide-react'
 import { soundManager } from '@/lib/SoundManager'
+import { useT } from '@/store/i18nStore'
 
 /**
  * 下注面板 —— 赛博斗蛐蛐模式专属
@@ -14,6 +15,7 @@ import { soundManager } from '@/lib/SoundManager'
 export function BettingPanel() {
   const { players, placeBet } = useGameStore()
   const [selectedId, setSelectedId] = useState<number | null>(null)
+  const t = useT()
 
   const aiPlayers = players.filter(p => p.isAI)
 
@@ -31,9 +33,9 @@ export function BettingPanel() {
         <div className="w-14 h-14 rounded-full bg-gold/10 border border-gold/25 flex items-center justify-center mx-auto mb-3">
           <Dice5 className="h-7 w-7 text-gold" />
         </div>
-        <h2 className="text-xl font-bold gold-text mb-1">下注环节</h2>
+        <h2 className="text-xl font-bold gold-text mb-1">{t('betting.title')}</h2>
         <p className="text-sm text-muted-foreground">
-          选择你认为会获胜的 AI 玩家，猜对阵营即为猜中
+          {t('betting.desc')}
         </p>
       </div>
 
@@ -71,7 +73,7 @@ export function BettingPanel() {
               {player.modelConfig && (
                 <div className="text-[10px] text-muted-foreground/70 bg-surface/60 px-1.5 py-0.5 rounded inline-block">
                   {player.modelConfig.provider === 'built-in'
-                    ? '内置模型'
+                    ? t('betting.builtinModel')
                     : player.modelConfig.model}
                 </div>
               )}
@@ -96,7 +98,7 @@ export function BettingPanel() {
           onClick={handleConfirm}
         >
           <Trophy className="h-4 w-4" />
-          确认下注
+          {t('betting.confirm')}
         </Button>
       )}
     </div>

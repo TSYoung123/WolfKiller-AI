@@ -1,5 +1,7 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { useI18nStore } from '@/store/i18nStore'
+import type { TranslationKey } from '@/i18n/zh'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -19,34 +21,19 @@ export function shuffle<T>(array: T[]): T[] {
 }
 
 export function formatPhase(phase: string): string {
-  const map: Record<string, string> = {
-    idle: '等待中',
-    role_assign: '分配角色',
-    betting: '下注环节',
-    night_start: '夜幕降临',
-    werewolf_turn: '狼人行动',
-    seer_turn: '预言家行动',
-    witch_turn: '女巫行动',
-    night_end: '夜晚结算',
-    day_start: '天亮了',
-    day_speech: '白天发言',
-    vote_start: '投票阶段',
-    vote_result: '投票结算',
-    check_win: '胜负检查',
-    game_over: '游戏结束',
-  }
-  return map[phase] || phase
+  const t = useI18nStore.getState().t
+  const key = `phase.${phase}` as TranslationKey
+  const translated = t(key)
+  if (translated !== key) return translated
+  return phase
 }
 
 export function formatRole(role: string): string {
-  const map: Record<string, string> = {
-    werewolf: '🐺 狼人',
-    villager: '👤 村民',
-    seer: '🔮 预言家',
-    witch: '🧪 女巫',
-    hunter: '🔫 猎人',
-  }
-  return map[role] || role
+  const t = useI18nStore.getState().t
+  const emoji = getRoleEmoji(role)
+  const name = t(`role.${role}` as TranslationKey)
+  if (name !== `role.${role}`) return `${emoji} ${name}`
+  return role
 }
 
 export function getRoleEmoji(role: string): string {
