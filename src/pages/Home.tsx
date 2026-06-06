@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useGameStore } from '@/store/gameStore'
 import { useConfigStore } from '@/store/configStore'
-import { Sparkles, Rocket } from 'lucide-react'
+import { Sparkles, Rocket, Settings } from 'lucide-react'
 import { soundManager } from '@/lib/SoundManager'
 
 // 星星类型：普通闪烁 / 漂浮 / 流星
@@ -77,6 +77,13 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 relative overflow-hidden">
+      {/* 设置按钮 */}
+      <button
+        onClick={() => navigate('/settings')}
+        className="absolute top-5 right-5 z-20 w-10 h-10 rounded-full bg-surface/60 border border-border/30 flex items-center justify-center text-muted-foreground hover:text-gold hover:border-gold/30 transition-all"
+      >
+        <Settings className="h-4 w-4" />
+      </button>
       {/* 星星粒子背景 */}
       {stars.map(star => {
         if (star.type === 'shooting') {

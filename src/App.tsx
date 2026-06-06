@@ -5,6 +5,7 @@ const Home = lazy(() => import('./pages/Home'))
 const Config = lazy(() => import('./pages/Config'))
 const Game = lazy(() => import('./pages/Game'))
 const Result = lazy(() => import('./pages/Result'))
+const Settings = lazy(() => import('./pages/Settings'))
 
 /** 路由切换时的加载过渡 */
 function LoadingFallback() {
@@ -26,6 +27,7 @@ function App() {
         <Route path="/config" element={<Config />} />
         <Route path="/game" element={<Game />} />
         <Route path="/result" element={<Result />} />
+        <Route path="/settings" element={<Settings />} />
       </Routes>
     </Suspense>
   )
