@@ -17,3 +17,5 @@ Thumbs.db
 
 # Screenshots (optional, keep repo small)
 *.png
+.vercel
+.vercel-tmp

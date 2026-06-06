@@ -3,6 +3,7 @@ import { useGameStore } from '@/store/gameStore'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Trophy, Dice5 } from 'lucide-react'
+import { soundManager } from '@/lib/SoundManager'
 
 /**
  * 下注面板 —— 赛博斗蛐蛐模式专属
@@ -18,6 +19,7 @@ export function BettingPanel() {
 
   const handleConfirm = () => {
     if (selectedId !== null) {
+      soundManager.play('bet')
       placeBet(selectedId)
     }
   }
@@ -42,7 +44,10 @@ export function BettingPanel() {
           return (
             <button
               key={player.id}
-              onClick={() => setSelectedId(player.id)}
+              onClick={() => {
+                soundManager.play('click')
+                setSelectedId(player.id)
+              }}
               className={cn(
                 "relative p-3 rounded-xl border text-left transition-all",
                 "hover:border-gold/40 hover:bg-gold/5",

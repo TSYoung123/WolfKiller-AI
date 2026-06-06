@@ -10,6 +10,7 @@ import { BettingPanel } from '@/components/game/BettingPanel'
 import { ToastContainer, toast } from '@/components/ui/toast'
 import { Button } from '@/components/ui/button'
 import { X, Pause, Play, SkipForward } from 'lucide-react'
+import { soundManager } from '@/lib/SoundManager'
 
 /**
  * 游戏页面 - 主游戏界面
@@ -90,15 +91,26 @@ export default function Game() {
     engineRef.current?.setSpeed(speed)
   }, [speed])
 
+  /** 根据游戏阶段切换背景音乐 */
+  useEffect(() => {
+    if (phase.includes('night')) {
+      soundManager.playBGM('night')
+    } else if (phase.includes('day') || phase.includes('vote') || phase.includes('speech')) {
+      soundManager.playBGM('day')
+    }
+  }, [phase])
+
   // ========== 控制按钮处理 ==========
 
   /** 变速：更新速度状态（通过 useEffect 同步到引擎） */
   const handleSpeedChange = (newSpeed: number) => {
+    soundManager.play('click')
     setSpeed(newSpeed)
   }
 
   /** 暂停/继续：调用引擎的 pause/resume */
   const handlePause = () => {
+    soundManager.play('click')
     if (isPaused) {
       engineRef.current?.resume()
       setIsPaused(false)
@@ -110,6 +122,7 @@ export default function Game() {
 
   /** 快进3秒：临时极速 → 3秒后恢复原速 */
   const handleSkip = () => {
+    soundManager.play('click')
     const oldSpeed = speed
     setSpeed(100)                          // UI 立即显示极速
     engineRef.current?.setSpeed(100)       // 引擎立即变速

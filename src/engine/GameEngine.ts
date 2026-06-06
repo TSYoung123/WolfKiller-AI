@@ -3,6 +3,7 @@ import { getAIAction, resetAgentState, useWitchAntidote, useWitchPoison, addSeer
 import { sleep } from '@/lib/utils'
 import type { GamePhase, Player, AIAction } from '@/engine/types'
 import { getPhaseThinking, getSpeechThinking } from '@/agents/ThinkingPhrases'
+import { soundManager } from '@/lib/SoundManager'
 
 /**
  * 游戏引擎 - 核心状态机
@@ -163,6 +164,13 @@ export class GameEngine {
   /** 宣布获胜方 */
   private announceWinner(winner: 'villager' | 'werewolf') {
     const store = useGameStore.getState()
+    const mode = useGameStore.getState().mode
+    // 赛博模式：玩家是观战者，狼人赢 = 下注失败；人机模式：玩家是好人阵营
+    const playerWins = mode === 'ai-only'
+      ? winner === 'villager' // 观战者默认押好人
+      : winner === 'villager'
+    soundManager.play(playerWins ? 'win' : 'lose')
+    soundManager.stopBGM()
     store.addMessage({
       playerId: 0, playerName: '系统',
       content: winner === 'villager'
@@ -215,6 +223,7 @@ export class GameEngine {
 
     // 夜幕降临
     await this.runPhase('night_start')
+    soundManager.play('phase_night')
     store.addMessage({
       playerId: 0, playerName: '系统',
       content: `🌙 第 ${store.round} 夜降临，所有人闭眼...`,
@@ -256,6 +265,7 @@ export class GameEngine {
 
     // 天亮公布死亡
     await this.runPhase('day_start')
+    soundManager.play('phase_day')
     await this.pauseableSleep()
 
     // 白天发言
@@ -270,6 +280,7 @@ export class GameEngine {
 
     // 投票
     await this.runPhase('vote_start')
+    soundManager.play('phase_vote')
     store.addMessage({
       playerId: 0, playerName: '系统',
       content: `🗳 进入投票环节...`,
@@ -489,6 +500,7 @@ export class GameEngine {
     }
 
     // 执行死亡 + 触发猎人技能
+    if (deaths.length > 0) soundManager.play('death')
     for (const id of deaths) {
       store.killPlayer(id)
       const player = store.players.find(p => p.id === id)
@@ -654,12 +666,14 @@ export class GameEngine {
         const action = await getAIAction(player, 'vote_start')
         if (action.targetId) {
           store.addVote(player.id, action.targetId)
+          soundManager.play('vote')
         }
       } else {
         // 真人投票 - 等待选择目标
         const targetId = await store.waitForInput()
         if (targetId) {
           store.addVote(player.id, targetId)
+          soundManager.play('vote')
         }
       }
 
@@ -724,6 +738,7 @@ export class GameEngine {
       // 放逐最高票玩家
       const exiled = store.players.find(p => p.id === exiledId)
       store.killPlayer(exiledId)
+      soundManager.play('death')
       store.addMessage({
         playerId: 0, playerName: '系统',
         content: `${exiled?.name || exiledId + '号'} 被投票放逐了。`,

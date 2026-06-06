@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { useGameStore } from '@/store/gameStore'
 import { useConfigStore } from '@/store/configStore'
 import { Sparkles, Rocket } from 'lucide-react'
+import { soundManager } from '@/lib/SoundManager'
 
 // 星星类型：普通闪烁 / 漂浮 / 流星
 function generateStars() {
@@ -47,6 +48,9 @@ export default function Home() {
   useEffect(() => {
     loadHistory()
     loadFromStorage()
+    // 进入首页时播放背景音乐
+    soundManager.playBGM('home')
+    return () => { soundManager.stopBGM() }
   }, [])
 
   // 随机星星
