@@ -104,6 +104,7 @@ const zh = {
   'game.continueGame': '继续游戏',
   'game.confirmExitBtn': '确认退出',
   'game.error': '游戏出错',
+  'game.exit': '退出',
 
   // ===== Phase =====
   'phase.idle': '等待中',

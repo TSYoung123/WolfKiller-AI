@@ -237,14 +237,13 @@ export default function Game() {
       )}
 
       {/* 右上角退出按钮 */}
-      <Button
-        variant="ghost"
-        size="icon"
+      <button
         onClick={() => setShowExitConfirm(true)}
-        className="fixed top-3 right-3 z-40 h-8 w-8 rounded-full text-muted-foreground hover:text-blood hover:bg-blood/10"
+        className="fixed top-3 right-3 z-40 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface/80 border border-border/50 text-muted-foreground hover:text-blood hover:border-blood/40 hover:bg-blood/10 transition-all duration-200 backdrop-blur-sm shadow-lg"
       >
         <X className="h-4 w-4" />
-      </Button>
+        <span className="text-xs font-medium">{t('game.exit')}</span>
+      </button>
 
       {/* 退出确认弹窗 */}
       {showExitConfirm && (

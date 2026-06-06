@@ -106,6 +106,7 @@ const en: Record<TranslationKey, string> = {
   'game.continueGame': 'Continue',
   'game.confirmExitBtn': 'Quit',
   'game.error': 'Game Error',
+  'game.exit': 'Exit',
 
   // ===== Phase =====
   'phase.idle': 'Waiting',
