@@ -1,17 +1,33 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
-import Home from './pages/Home'
-import Config from './pages/Config'
-import Game from './pages/Game'
-import Result from './pages/Result'
+
+const Home = lazy(() => import('./pages/Home'))
+const Config = lazy(() => import('./pages/Config'))
+const Game = lazy(() => import('./pages/Game'))
+const Result = lazy(() => import('./pages/Result'))
+
+/** 路由切换时的加载过渡 */
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center animate-fade-in">
+        <div className="w-10 h-10 rounded-full border-2 border-gold/30 border-t-gold animate-spin mx-auto mb-3" />
+        <p className="text-sm text-muted-foreground">加载中...</p>
+      </div>
+    </div>
+  )
+}
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/config" element={<Config />} />
-      <Route path="/game" element={<Game />} />
-      <Route path="/result" element={<Result />} />
-    </Routes>
+    <Suspense fallback={<LoadingFallback />}>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/config" element={<Config />} />
+        <Route path="/game" element={<Game />} />
+        <Route path="/result" element={<Result />} />
+      </Routes>
+    </Suspense>
   )
 }
 

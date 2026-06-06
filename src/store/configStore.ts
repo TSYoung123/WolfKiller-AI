@@ -32,13 +32,46 @@ interface ConfigState {
 
 let slotCounter = 0
 
+// 从 localStorage 读取初始值，避免挂载后 effect 触发额外渲染
+function getInitialState(): { slots: ConfigSlot[]; gameSettings: GameSettings } {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw) {
+      const data = JSON.parse(raw)
+      if (data.slots?.length) {
+        const maxNum = Math.max(...data.slots.map((s: ConfigSlot) => {
+          const n = parseInt(s.id.replace('slot-', ''))
+          return isNaN(n) ? 0 : n
+        }))
+        slotCounter = maxNum
+      }
+      return {
+        slots: data.slots || [],
+        gameSettings: data.gameSettings || {
+          playerCount: 8,
+          mode: 'human-ai',
+          roleConfig: ROLE_PRESETS[8],
+        },
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return {
+    slots: [],
+    gameSettings: {
+      playerCount: 8,
+      mode: 'human-ai',
+      roleConfig: ROLE_PRESETS[8],
+    },
+  }
+}
+
+const initialState = getInitialState()
+
 export const useConfigStore = create<ConfigState>((set, get) => ({
-  slots: [],
-  gameSettings: {
-    playerCount: 8,
-    mode: 'human-ai',
-    roleConfig: ROLE_PRESETS[8],
-  },
+  slots: initialState.slots,
+  gameSettings: initialState.gameSettings,
   activeSlotId: null,
 
   addSlot: (provider) => {

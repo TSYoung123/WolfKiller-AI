@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -30,9 +30,20 @@ export default function Config() {
   const [tested, setTested] = useState<Record<string, boolean>>({})
   const [showAdvanced, setShowAdvanced] = useState(slots.some(s => s.aiConfig.apiKey))
 
+  // URL mode 参数优先应用（store 已从 localStorage 初始化，无需再 load）
   useEffect(() => {
     setGameMode(modeParam as any)
   }, [modeParam])
+
+  // 配置变更时自动保存（跳过首次挂载）
+  const isInitialMount = useRef(true)
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+    saveToStorage()
+  }, [slots, gameSettings])
 
   const handleTest = async (slotId: string) => {
     const slot = slots.find(s => s.id === slotId)

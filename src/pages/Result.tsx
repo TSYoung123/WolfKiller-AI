@@ -37,6 +37,11 @@ export default function Result() {
       betResult,
     }
     saveHistory(game)
+
+    // 离开结果页时重置游戏状态，避免返回首页时残留游戏内容
+    return () => {
+      useGameStore.getState().resetGame()
+    }
   }, [])
 
   return (

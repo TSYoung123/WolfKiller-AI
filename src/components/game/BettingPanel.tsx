@@ -47,7 +47,7 @@ export function BettingPanel() {
                 "relative p-3 rounded-xl border text-left transition-all",
                 "hover:border-gold/40 hover:bg-gold/5",
                 isSelected
-                  ? "border-gold/60 bg-gold/10 shadow-md shadow-gold/10"
+                  ? "border-gold/60 bg-gold/10 shadow-lg shadow-gold/20 ring-1 ring-gold/30 animate-select-pop"
                   : "border-border/40 bg-surface/40"
               )}
             >
@@ -82,19 +82,18 @@ export function BettingPanel() {
         })}
       </div>
 
-      {/* Confirm button */}
-      <Button
-        variant="gold"
-        size="sm"
-        className="rounded-full px-8 gap-2"
-        disabled={selectedId === null}
-        onClick={handleConfirm}
-      >
-        <Trophy className="h-4 w-4" />
-        {selectedId !== null
-          ? `确认下注 ${selectedId}号`
-          : '请选择一名玩家'}
-      </Button>
+      {/* Confirm button - 选中玩家后才显示 */}
+      {selectedId !== null && (
+        <Button
+          variant="gold"
+          size="sm"
+          className="rounded-full px-8 gap-2 animate-fade-in"
+          onClick={handleConfirm}
+        >
+          <Trophy className="h-4 w-4" />
+          确认下注
+        </Button>
+      )}
     </div>
   )
 }

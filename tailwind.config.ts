@@ -111,6 +111,12 @@ const config: Config = {
           "25%": { transform: "translateX(-4px)" },
           "75%": { transform: "translateX(4px)" },
         },
+        "select-pop": {
+          "0%": { transform: "scale(1)" },
+          "40%": { transform: "scale(1.06)" },
+          "70%": { transform: "scale(0.97)" },
+          "100%": { transform: "scale(1)" },
+        },
       },
       animation: {
         "fade-in": "fade-in 0.4s ease-out",
@@ -123,6 +129,7 @@ const config: Config = {
         "shooting-star": "shooting-star 3s ease-in-out infinite",
         "typewriter": "typewriter 0.5s steps(20)",
         "shake": "shake 0.3s ease-in-out",
+        "select-pop": "select-pop 0.35s ease-out",
       },
     },
   },
