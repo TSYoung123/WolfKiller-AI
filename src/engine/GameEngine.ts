@@ -470,6 +470,14 @@ export class GameEngine {
           seerCheckedId: targetId,
           seerCheckedResult: isWerewolf,
         })
+        addSeerCheck(targetId, isWerewolf)
+
+        // 人机模式：向人类预言家显示查验结果
+        store.addMessage({
+          playerId: 0, playerName: '系统',
+          content: `🔮 你查验了 ${target?.name || targetId + '号'}，结果是${isWerewolf ? '🐺 狼人' : '✅ 好人'}`,
+          round: store.round, phase: 'seer_turn',
+        })
       }
     }
 
