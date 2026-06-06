@@ -25,6 +25,8 @@ export function PlayerColumn({ players, side }: PlayerColumnProps) {
     if (isSpectator) return true
     if (!player.isAlive) return true
     if (!player.isAI && player.id === humanPlayer?.id) return true
+    // 人类是狼人时，显示狼队友的身份（仅狼人可见）
+    if (humanPlayer?.role === 'werewolf' && player.role === 'werewolf' && player.isAlive) return true
     return false
   }
 
@@ -39,6 +41,7 @@ export function PlayerColumn({ players, side }: PlayerColumnProps) {
         const isPlayerThinking = isActive && isThinking
         const isPlayerSpeaking = isActive && !isThinking
         const isHuman = !player.isAI && player.id === humanPlayer?.id
+        const isWerewolfTeammate = humanPlayer?.role === 'werewolf' && player.role === 'werewolf' && player.id !== humanPlayer.id && player.isAlive
 
         return (
           <div
@@ -125,6 +128,13 @@ export function PlayerColumn({ players, side }: PlayerColumnProps) {
               "absolute top-1 right-1 w-2 h-2 rounded-full",
               player.isAlive ? "bg-green-400" : "bg-gray-500"
             )} />
+
+            {/* Wolf teammate badge (visible only to human werewolf) */}
+            {isWerewolfTeammate && (
+              <div className="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-red-500/20 border border-red-500/40 flex items-center justify-center">
+                <span className="text-[10px]">🐺</span>
+              </div>
+            )}
           </div>
         )
       })}

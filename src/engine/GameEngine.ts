@@ -360,8 +360,19 @@ export class GameEngine {
       if (wolf.isAI && wolf.modelConfig) {
         try {
           const action = await getAIAction(wolf, 'werewolf_turn')
+          // 硬校验：AI 狼人不能选狼队友为目标
           if (action.targetId) {
-            killVotes[action.targetId] = (killVotes[action.targetId] || 0) + 1
+            const target = store.players.find(p => p.id === action.targetId)
+            if (target && target.role !== 'werewolf' && target.isAlive) {
+              killVotes[action.targetId] = (killVotes[action.targetId] || 0) + 1
+            } else {
+              // AI 选了无效目标，随机选一个非狼人
+              const targets = store.players.filter(p => p.isAlive && p.role !== 'werewolf')
+              if (targets.length > 0) {
+                const t = targets[Math.floor(Math.random() * targets.length)]
+                killVotes[t.id] = (killVotes[t.id] || 0) + 1
+              }
+            }
           }
         } catch {
           const targets = store.players.filter(p => p.isAlive && p.role !== 'werewolf')
@@ -374,7 +385,11 @@ export class GameEngine {
         store.setWaitingForInput(true)
         const targetId = await store.waitForInput()
         if (targetId) {
-          killVotes[targetId] = (killVotes[targetId] || 0) + 1
+          // 硬校验：人类狼人也不能选狼队友为目标
+          const target = store.players.find(p => p.id === targetId)
+          if (target && target.role !== 'werewolf' && target.isAlive) {
+            killVotes[targetId] = (killVotes[targetId] || 0) + 1
+          }
         }
       }
       await this.pauseableSleep(300)

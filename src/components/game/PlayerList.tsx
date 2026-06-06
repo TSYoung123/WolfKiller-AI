@@ -24,6 +24,8 @@ export function PlayerList({ players }: PlayerListProps) {
     if (isSpectator) return true
     if (!player.isAlive) return true
     if (!player.isAI && player.id === humanPlayer?.id) return true
+    // 人类是狼人时，显示狼队友的身份（仅狼人可见）
+    if (humanPlayer?.role === 'werewolf' && player.role === 'werewolf' && player.isAlive) return true
     return false
   }
 
