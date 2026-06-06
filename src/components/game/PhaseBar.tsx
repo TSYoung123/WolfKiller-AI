@@ -1,4 +1,4 @@
-import { formatPhase, getRoleEmoji, formatRole } from '@/lib/utils'
+import { formatPhase, formatRole } from '@/lib/utils'
 import type { GamePhase } from '@/engine/types'
 import { cn } from '@/lib/utils'
 import { Moon, Sun, Swords, Vote, Skull, Dice5 } from 'lucide-react'
@@ -52,7 +52,6 @@ export function PhaseBar({ round, phase, playerCount }: PhaseBarProps) {
         {/* Show human player's role */}
         {humanPlayer && (
           <div className="flex items-center gap-1.5 bg-gold/10 border border-gold/20 px-2.5 py-1 rounded-full">
-            <span className="text-sm">{getRoleEmoji(humanPlayer.role)}</span>
             <span className="text-xs text-gold font-medium">{formatRole(humanPlayer.role)}</span>
           </div>
         )}

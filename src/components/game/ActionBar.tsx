@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { GamePhase, GameMode } from '@/engine/types'
 import { formatPhase } from '@/lib/utils'
-import { Bot, Moon, Clock, Swords, Eye, FlaskConical, Vote } from 'lucide-react'
+import { Bot, Moon, Clock, Swords, Eye, FlaskConical } from 'lucide-react'
 import { useT } from '@/store/i18nStore'
 
 interface ActionBarProps {
@@ -35,7 +35,6 @@ export function ActionBar({ phase, mode }: ActionBarProps) {
   // Human-AI mode
   const isNightPhase = ['werewolf_turn', 'seer_turn', 'witch_turn'].includes(phase)
   const isSpeechPhase = phase === 'day_speech'
-  const isVotePhase = phase === 'vote_start'
 
   // Not waiting for input
   if (!waitingForInput) {
@@ -129,39 +128,6 @@ export function ActionBar({ phase, mode }: ActionBarProps) {
         <p className="text-[10px] text-muted-foreground text-center mt-1">
           {t('action.charCount', { count: String(speechText.length) })}
         </p>
-      </div>
-    )
-  }
-
-  // Vote
-  if (isVotePhase) {
-    const voteTargets = alivePlayers.filter(p => p.id !== humanPlayer?.id)
-    return (
-      <div className="w-full py-4 px-6 border-t border-border/50 bg-card/80 backdrop-blur-sm">
-        <p className="text-sm text-gold mb-2 text-center flex items-center justify-center gap-1.5">
-          <Vote className="h-4 w-4" /> {t('action.selectVoteTarget')}
-        </p>
-        <div className="flex flex-wrap justify-center gap-2">
-          {voteTargets.map(p => (
-            <Button
-              key={p.id}
-              variant="outline"
-              size="sm"
-              onClick={() => resolveInput(p.id)}
-              className="min-w-[80px] rounded-full hover:border-blood/50 hover:bg-blood/5 transition-colors duration-200"
-            >
-              {p.id}号 {p.name}
-            </Button>
-          ))}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => resolveInput(null)}
-            className="rounded-full text-muted-foreground"
-          >
-            {t('action.abstain')}
-          </Button>
-        </div>
       </div>
     )
   }

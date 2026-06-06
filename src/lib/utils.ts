@@ -46,3 +46,10 @@ export function getRoleEmoji(role: string): string {
   }
   return map[role] || '❓'
 }
+
+export function getRoleName(role: string): string {
+  const t = useI18nStore.getState().t
+  const name = t(`role.${role}` as TranslationKey)
+  if (name !== `role.${role}`) return name
+  return role
+}

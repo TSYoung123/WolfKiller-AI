@@ -7,6 +7,7 @@ import { PlayerColumn } from '@/components/game/PlayerColumn'
 import { ChatLog } from '@/components/game/ChatLog'
 import { ActionBar } from '@/components/game/ActionBar'
 import { BettingPanel } from '@/components/game/BettingPanel'
+import { VotePanel } from '@/components/game/VotePanel'
 import { ToastContainer, toast } from '@/components/ui/toast'
 import { Button } from '@/components/ui/button'
 import { X, Pause, Play, SkipForward } from 'lucide-react'
@@ -42,7 +43,7 @@ export default function Game() {
 
   // 从全局状态获取游戏数据
   const {
-    phase, mode, players, round, messages, winner,
+    phase, mode, players, round, messages, winner, waitingForInput,
   } = useGameStore()
 
   // ========== 引擎生命周期 ==========
@@ -178,7 +179,11 @@ export default function Game() {
 
         {/* 中列：聊天 + 控制 */}
         <div className="flex-1 flex flex-col min-w-0 gap-2">
-          <ChatLog messages={messages} />
+          {phase === 'vote_start' && waitingForInput ? (
+            <VotePanel />
+          ) : (
+            <ChatLog messages={messages} />
+          )}
 
           {/* 观战控制栏：暂停 + 变速 + 快进 */}
           <div className="flex items-center justify-center gap-2 py-2 shrink-0">
@@ -236,10 +241,10 @@ export default function Game() {
         </>
       )}
 
-      {/* 右上角退出按钮 */}
+      {/* 左下角退出按钮 */}
       <button
         onClick={() => setShowExitConfirm(true)}
-        className="fixed top-3 right-3 z-40 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface/80 border border-border/50 text-muted-foreground hover:text-blood hover:border-blood/40 hover:bg-blood/10 transition-all duration-200 backdrop-blur-sm shadow-lg"
+        className="fixed bottom-3 left-3 z-40 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface/80 border border-border/50 text-muted-foreground hover:text-blood hover:border-blood/40 hover:bg-blood/10 transition-all duration-200 backdrop-blur-sm shadow-lg"
       >
         <X className="h-4 w-4" />
         <span className="text-xs font-medium">{t('game.exit')}</span>

@@ -1,6 +1,6 @@
 import { useGameStore } from '@/store/gameStore'
 import type { Player } from '@/engine/types'
-import { cn, getRoleEmoji, formatRole } from '@/lib/utils'
+import { cn, getRoleEmoji, getRoleName } from '@/lib/utils'
 import { useT } from '@/store/i18nStore'
 
 interface PlayerColumnProps {
@@ -101,7 +101,7 @@ export function PlayerColumn({ players, side }: PlayerColumnProps) {
 
                 {showRole(player) && (
                   <p className="text-[10px] text-muted-foreground truncate">
-                    {formatRole(player.role)}
+                    {getRoleName(player.role)}
                   </p>
                 )}
 
