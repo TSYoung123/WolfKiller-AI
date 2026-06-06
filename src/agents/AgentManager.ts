@@ -113,7 +113,7 @@ export async function getAIAction(
       console.error(`AI 发言失败 (${player.name}):`, e.message || e)
       fullContent = `（${player.name}沉默不语... ${e.message?.slice(0, 50) || '未知错误'}）`
     }
-    return { type: 'speech', content: fullContent.slice(0, 100) }
+    return { type: 'speech', content: fullContent.slice(0, 500) }
   }
 
   // 行动类 - JSON 格式
