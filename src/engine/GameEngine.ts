@@ -118,8 +118,15 @@ export class GameEngine {
         await this.runPhase('role_assign')
         await this.pauseableSleep(500)
 
-        // 赛博斗蛐蛐模式：角色分配后进入下注环节
         const currentMode = useGameStore.getState().mode
+
+        // 人机模式：第一夜狼人相认
+        if (currentMode === 'human-ai') {
+          await this.runWerewolfRecognize()
+          if (!this.running) return
+        }
+
+        // 赛博斗蛐蛐模式：角色分配后进入下注环节
         if (currentMode === 'ai-only') {
           await this.runBettingPhase()
           if (!this.running) return
@@ -212,6 +219,33 @@ export class GameEngine {
     if (!this.running) return
     useGameStore.getState().setPhase(phase)
     this.onPhaseChange?.(phase)
+  }
+
+  /**
+   * 狼人相认 —— 第一夜角色分配后，人类狼人查看狼队友
+   * 仅在人机模式触发；人类不是狼人时静默跳过
+   */
+  private async runWerewolfRecognize() {
+    const store = useGameStore.getState()
+    await this.runPhase('werewolf_recognize')
+
+    const humanPlayer = store.players.find(p => !p.isAI)
+    if (!humanPlayer || humanPlayer.role !== 'werewolf') {
+      // 人类不是狼人，静默跳过
+      await this.pauseableSleep(800)
+      return
+    }
+
+    // 人类是狼人：发送相认消息并等待确认
+    const teammates = store.players.filter(p => p.role === 'werewolf' && p.id !== humanPlayer.id)
+    const teammateNames = teammates.map(p => `${p.id}号 ${p.name}`).join('、')
+    store.addMessage({
+      playerId: 0, playerName: '系统',
+      content: `🐺 狼人相认：你的狼队友是 ${teammateNames}`,
+      round: store.round, phase: 'werewolf_recognize',
+    })
+    store.setWaitingForInput(true)
+    await store.waitForInput() // 等待点击"我已记住"
   }
 
   // ==================== 夜晚循环 ====================
@@ -337,6 +371,7 @@ export class GameEngine {
           }
         }
       } else {
+        store.setWaitingForInput(true)
         const targetId = await store.waitForInput()
         if (targetId) {
           killVotes[targetId] = (killVotes[targetId] || 0) + 1
@@ -417,6 +452,7 @@ export class GameEngine {
       }
     } else {
       // 真人预言家 - 等待输入
+      store.setWaitingForInput(true)
       const targetId = await store.waitForInput()
       if (targetId) {
         const target = store.players.find(p => p.id === targetId)
@@ -457,6 +493,7 @@ export class GameEngine {
       this.applyWitchAction(action)
     } else {
       // 真人女巫 - 等待输入
+      store.setWaitingForInput(true)
       const action = await store.waitForInput()
       if (action) {
         this.applyWitchAction(action)
@@ -540,6 +577,7 @@ export class GameEngine {
       const action = await getAIAction(hunter, 'hunter_shot')
       targetId = action.targetId
     } else {
+      store.setWaitingForInput(true)
       targetId = await store.waitForInput()
     }
 
@@ -662,22 +700,29 @@ export class GameEngine {
       await this.checkPause()
       if (!this.running) return
 
+      let targetId: number | undefined | null = null
+
       if (player.isAI && player.modelConfig) {
         const action = await getAIAction(player, 'vote_start')
-        if (action.targetId) {
-          store.addVote(player.id, action.targetId)
-          soundManager.play('vote')
-        }
+        targetId = action.targetId
       } else {
         // 真人投票 - 等待选择目标
-        const targetId = await store.waitForInput()
-        if (targetId) {
-          store.addVote(player.id, targetId)
-          soundManager.play('vote')
-        }
+        targetId = await store.waitForInput()
       }
 
-      await this.pauseableSleep(300)
+      if (targetId) {
+        store.addVote(player.id, targetId)
+        soundManager.play('vote')
+        // 逐条显示投票消息
+        const target = store.players.find(p => p.id === targetId)
+        store.addMessage({
+          playerId: 0, playerName: '系统',
+          content: `🗳 ${player.name} 投了 ${target?.name || targetId + '号'}`,
+          round: store.round, phase: 'vote_start',
+        })
+      }
+
+      await this.pauseableSleep(500) // 每票间隔稍长，保证可读性
     }
   }
 

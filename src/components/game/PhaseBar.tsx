@@ -1,7 +1,7 @@
 import { formatPhase, formatRole } from '@/lib/utils'
 import type { GamePhase } from '@/engine/types'
 import { cn } from '@/lib/utils'
-import { Moon, Sun, Swords, Vote, Skull, Dice5 } from 'lucide-react'
+import { Moon, Sun, Swords, Vote, Skull, Dice5, Users } from 'lucide-react'
 import { useGameStore } from '@/store/gameStore'
 import { useT } from '@/store/i18nStore'
 
@@ -11,10 +11,11 @@ interface PhaseBarProps {
   playerCount: number
 }
 
-const nightPhases: GamePhase[] = ['night_start', 'werewolf_turn', 'seer_turn', 'witch_turn', 'night_end']
+const nightPhases: GamePhase[] = ['night_start', 'werewolf_turn', 'seer_turn', 'witch_turn', 'night_end', 'werewolf_recognize']
 const dayPhases: GamePhase[] = ['day_start', 'day_speech', 'vote_start', 'vote_result']
 
 function getPhaseIcon(phase: GamePhase) {
+  if (phase === 'werewolf_recognize') return <Users className="h-4 w-4 text-red-400" />
   if (nightPhases.includes(phase)) return <Moon className="h-4 w-4 text-blue-400" />
   if (phase === 'betting') return <Dice5 className="h-4 w-4 text-gold" />
   if (phase === 'day_speech') return <Sun className="h-4 w-4 text-yellow-400" />
@@ -49,6 +50,8 @@ export function PhaseBar({ round, phase, playerCount }: PhaseBarProps) {
       </div>
 
       <div className="flex items-center gap-3">
+        {/* Vote tally during vote phase */}
+        {(phase === 'vote_start' || phase === 'vote_result') && <VoteTallyCompact />}
         {/* Show human player's role */}
         {humanPlayer && (
           <div className="flex items-center gap-1.5 bg-gold/10 border border-gold/20 px-2.5 py-1 rounded-full">
@@ -59,6 +62,30 @@ export function PhaseBar({ round, phase, playerCount }: PhaseBarProps) {
           {t('game.playerCount', { count: String(playerCount) })}
         </span>
       </div>
+    </div>
+  )
+}
+
+/** Compact vote tally for PhaseBar */
+function VoteTallyCompact() {
+  const { players, votes } = useGameStore()
+  const tally: Record<number, number> = {}
+  for (const targetId of Object.values(votes)) {
+    tally[targetId] = (tally[targetId] || 0) + 1
+  }
+  const sorted = Object.entries(tally).sort((a, b) => b[1] - a[1])
+  if (sorted.length === 0) return null
+
+  return (
+    <div className="flex items-center gap-1.5">
+      {sorted.slice(0, 5).map(([pid, count]) => {
+        const player = players.find(p => p.id === Number(pid))
+        return (
+          <span key={pid} className="text-xs text-muted-foreground">
+            {player?.name || pid}: <span className="text-gold font-bold">{count}</span>
+          </span>
+        )
+      })}
     </div>
   )
 }

@@ -109,6 +109,7 @@ const zh = {
   // ===== Phase =====
   'phase.idle': '等待中',
   'phase.role_assign': '分配角色',
+  'phase.werewolf_recognize': '狼人相认',
   'phase.betting': '下注环节',
   'phase.night_start': '夜幕降临',
   'phase.werewolf_turn': '狼人行动',
@@ -121,6 +122,7 @@ const zh = {
   'phase.vote_result': '投票结算',
   'phase.check_win': '胜负检查',
   'phase.game_over': '游戏结束',
+  'phase.hunter_shot': '猎人开枪',
 
   // ===== Roles =====
   'role.werewolf': '狼人',
@@ -146,6 +148,40 @@ const zh = {
   'action.charCount': '{count}/80 字',
   'action.selectVoteTarget': '选择你要投票放逐的玩家',
   'action.abstain': '弃权',
+
+  // ===== Night Action Panel =====
+  'action.selectHunterTarget': '选择你要带走的玩家',
+  'action.hunterShotDesc': '开枪带走一名玩家',
+  'action.witchChooseAction': '选择你的行动',
+  'action.selectSaveTarget': '选择要救的玩家',
+  'action.selectPoisonTarget': '选择要毒的玩家',
+  'action.witchTonightKilled': '今晚被杀的是：{name}',
+  'action.witchTonightVictim': '被杀玩家：{name}',
+  'action.witchNoKill': '今晚无人被杀',
+  'action.save': '救人',
+  'action.poison': '毒人',
+  'action.back': '返回',
+  'action.noTargets': '没有可选目标',
+
+  // ===== Werewolf Recognize =====
+  'recognize.title': '狼人相认',
+  'recognize.desc': '记住你的狼队友，不要误杀他们',
+  'recognize.yourTeammates': '你的狼队友：',
+  'recognize.notWerewolf': '你不是狼人，请等待狼人行动',
+  'recognize.continue': '我已记住，开始行动',
+
+  // ===== Vote Tally =====
+  'vote.tally': '当前票数',
+  'vote.noVotes': '尚无投票',
+  'vote.votedFor': '{voter} 投了 {target}',
+  'vote.playerVoted': '{voter} → {target}',
+
+  // ===== Role Select =====
+  'roleSelect.title': '选择身份',
+  'roleSelect.desc': '选择你想扮演的身份（80%概率选中）',
+  'roleSelect.random': '随机分配',
+  'roleSelect.randomDesc': '完全随机分配身份',
+  'roleSelect.confirm': '确认选择',
 
   // ===== PlayerColumn =====
   'player.thinking': '思考中...',

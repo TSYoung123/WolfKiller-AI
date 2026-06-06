@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { GamePhase, GameMode } from '@/engine/types'
 import { formatPhase } from '@/lib/utils'
-import { Bot, Moon, Clock, Swords, Eye, FlaskConical } from 'lucide-react'
+import { Bot, Moon, Clock } from 'lucide-react'
 import { useT } from '@/store/i18nStore'
 
 interface ActionBarProps {
@@ -12,13 +12,18 @@ interface ActionBarProps {
   mode: GameMode
 }
 
+/**
+ * 底部操作栏
+ *
+ * - AI-only 模式：显示观战提示
+ * - 夜晚行动阶段（狼人/预言家/女巫/猎人）：由中央 NightActionPanel 处理，此处仅显示等待状态
+ * - 白天发言阶段：文字输入框
+ * - 其他：显示当前阶段等待文案
+ */
 export function ActionBar({ phase, mode }: ActionBarProps) {
-  const { waitingForInput, players, resolveInput, nightResult } = useGameStore()
+  const { waitingForInput, resolveInput } = useGameStore()
   const [speechText, setSpeechText] = useState('')
   const t = useT()
-
-  const humanPlayer = players.find(p => !p.isAI)
-  const alivePlayers = players.filter(p => p.isAlive)
 
   // Spectator mode - no player input
   if (mode === 'ai-only') {
@@ -33,11 +38,11 @@ export function ActionBar({ phase, mode }: ActionBarProps) {
   }
 
   // Human-AI mode
-  const isNightPhase = ['werewolf_turn', 'seer_turn', 'witch_turn'].includes(phase)
+  const isNightPhase = ['werewolf_turn', 'seer_turn', 'witch_turn', 'hunter_shot'].includes(phase)
   const isSpeechPhase = phase === 'day_speech'
 
-  // Not waiting for input
-  if (!waitingForInput) {
+  // Not waiting for input (or night phase handled by NightActionPanel in center)
+  if (!waitingForInput || isNightPhase) {
     return (
       <div className="w-full py-3 px-6 border-t border-border/50 bg-card/50 backdrop-blur-sm">
         <div className="text-center text-sm text-muted-foreground flex items-center justify-center gap-1.5">
@@ -45,49 +50,6 @@ export function ActionBar({ phase, mode }: ActionBarProps) {
             <><Moon className="h-4 w-4 text-indigo-400" /> {t('action.nightWaiting')}</>
           ) : (
             <><Clock className="h-4 w-4" /> {formatPhase(phase)}...</>
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  // Night skill usage
-  if (isNightPhase && humanPlayer) {
-    const targets = alivePlayers.filter(p => {
-      if (phase === 'werewolf_turn') return p.role !== 'werewolf' && p.id !== humanPlayer.id
-      if (phase === 'seer_turn') return p.id !== humanPlayer.id
-      if (phase === 'witch_turn') return p.id !== humanPlayer.id
-      return true
-    })
-
-    return (
-      <div className="w-full py-4 px-6 border-t border-border/50 bg-card/80 backdrop-blur-sm">
-        <p className="text-sm text-gold mb-2 flex items-center gap-1.5">
-          {phase === 'werewolf_turn' && <><Swords className="h-4 w-4 text-red-400" /> {t('action.selectKillTarget')}</>}
-          {phase === 'seer_turn' && <><Eye className="h-4 w-4 text-blue-400" /> {t('action.selectSeerTarget')}</>}
-          {phase === 'witch_turn' && <><FlaskConical className="h-4 w-4 text-green-400" /> {t('action.selectMedicine')}</>}
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {targets.map(p => (
-            <Button
-              key={p.id}
-              variant="outline"
-              size="sm"
-              onClick={() => resolveInput(p.id)}
-              className="rounded-full hover:border-gold/50 hover:bg-gold/5 transition-colors duration-200"
-            >
-              {p.id}号 {p.name}
-            </Button>
-          ))}
-          {phase === 'witch_turn' && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => resolveInput({ type: 'save', targetId: undefined })}
-              className="rounded-full text-muted-foreground"
-            >
-              {t('action.noMedicine')}
-            </Button>
           )}
         </div>
       </div>

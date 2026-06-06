@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -41,6 +41,16 @@ export default function Settings() {
   const [showKeys, setShowKeys] = useState<Record<string, boolean>>({})
   const [testing, setTesting] = useState<string | null>(null)
   const [tested, setTested] = useState<Record<string, boolean>>({})
+
+  // API 配置变更时自动保存到 localStorage
+  const isInitialMount = useRef(true)
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+    saveToStorage()
+  }, [slots])
 
   const { language, setLanguage } = useI18nStore()
   const t = useT()

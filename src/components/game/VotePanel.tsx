@@ -11,21 +11,47 @@ import { useT } from '@/store/i18nStore'
  * 
  * 投票阶段时展示，用户选择要投票放逐的玩家
  * 点击玩家卡片选中 → 自动提交投票
+ * 底部显示实时票数统计
  */
 export function VotePanel() {
-  const { players, resolveInput, waitingForInput } = useGameStore()
+  const { players, resolveInput, waitingForInput, votes } = useGameStore()
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const t = useT()
 
   const humanPlayer = players.find(p => !p.isAI)
   const alivePlayers = players.filter(p => p.isAlive && p.id !== humanPlayer?.id)
 
-  if (!waitingForInput) return null
+  // 计算实时票数统计
+  const voteTally: Record<number, number> = {}
+  for (const targetId of Object.values(votes)) {
+    voteTally[targetId] = (voteTally[targetId] || 0) + 1
+  }
+  const totalVotes = Object.keys(votes).length
+  const aliveCount = players.filter(p => p.isAlive).length
+
+  if (!waitingForInput) {
+    // 投票进行中但非本人轮次 —— 显示当前票数统计
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center min-h-0 p-4 animate-fade-in">
+        <div className="text-center mb-6">
+          <div className="w-14 h-14 rounded-full bg-blood/10 border border-blood/25 flex items-center justify-center mx-auto mb-3">
+            <Vote className="h-7 w-7 text-blood" />
+          </div>
+          <h2 className="text-xl font-bold text-blood mb-1">{t('phase.vote_start')}</h2>
+          <p className="text-sm text-muted-foreground">
+            {t('vote.tally')}（{totalVotes}/{aliveCount}）
+          </p>
+        </div>
+
+        {/* 实时票数列表 */}
+        <VoteTally players={players} voteTally={voteTally} t={t} />
+      </div>
+    )
+  }
 
   const handleVote = (targetId: number) => {
     soundManager.play('click')
     setSelectedId(targetId)
-    // 短暂延迟展示选中效果后自动提交
     setTimeout(() => {
       resolveInput(targetId)
     }, 300)
@@ -39,7 +65,7 @@ export function VotePanel() {
   return (
     <div className="flex-1 flex flex-col items-center justify-center min-h-0 p-4 animate-fade-in">
       {/* Header */}
-      <div className="text-center mb-6">
+      <div className="text-center mb-4">
         <div className="w-14 h-14 rounded-full bg-blood/10 border border-blood/25 flex items-center justify-center mx-auto mb-3">
           <Vote className="h-7 w-7 text-blood" />
         </div>
@@ -49,10 +75,18 @@ export function VotePanel() {
         </p>
       </div>
 
+      {/* 实时票数（如果已有投票） */}
+      {totalVotes > 0 && (
+        <div className="mb-4 w-full max-w-xl">
+          <VoteTally players={players} voteTally={voteTally} t={t} />
+        </div>
+      )}
+
       {/* Player grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-w-xl w-full mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-w-xl w-full mb-4">
         {alivePlayers.map(player => {
           const isSelected = selectedId === player.id
+          const currentVotes = voteTally[player.id] || 0
           return (
             <button
               key={player.id}
@@ -68,6 +102,12 @@ export function VotePanel() {
               <div className="text-base font-bold mb-1">
                 {player.id}号 · {player.name}
               </div>
+              {/* 已获票数角标 */}
+              {currentVotes > 0 && (
+                <div className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-blood flex items-center justify-center">
+                  <span className="text-[10px] font-bold text-white">{currentVotes}</span>
+                </div>
+              )}
             </button>
           )
         })}
@@ -83,6 +123,50 @@ export function VotePanel() {
         <UserX className="h-3.5 w-3.5" />
         {t('action.abstain')}
       </Button>
+    </div>
+  )
+}
+
+/** 票数统计子组件 */
+function VoteTally({
+  players,
+  voteTally,
+  t,
+}: {
+  players: ReturnType<typeof useGameStore.getState>['players']
+  voteTally: Record<number, number>
+  t: (key: any) => string
+}) {
+  // 按票数降序排列，只显示有票的玩家
+  const entries = Object.entries(voteTally)
+    .map(([id, count]) => ({ id: Number(id), count }))
+    .sort((a, b) => b.count - a.count)
+    .filter(e => e.count > 0)
+
+  if (entries.length === 0) {
+    return <p className="text-xs text-muted-foreground text-center">{t('vote.noVotes')}</p>
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2 justify-center">
+      {entries.map(({ id, count }) => {
+        const player = players.find(p => p.id === id)
+        return (
+          <div
+            key={id}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm",
+              count >= 2
+                ? "border-blood/50 bg-blood/10 text-blood"
+                : "border-border/50 bg-surface/50 text-foreground"
+            )}
+          >
+            <span className="font-medium">{player?.name || id + '号'}</span>
+            <span className="font-bold text-base tabular-nums">{count}</span>
+            <span className="text-xs text-muted-foreground">票</span>
+          </div>
+        )
+      })}
     </div>
   )
 }

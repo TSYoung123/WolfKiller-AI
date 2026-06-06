@@ -28,7 +28,7 @@ interface GameStoreState {
   history: GameHistory[]
 
   // Actions
-  initGame: (mode: GameMode, playerCount: number, aiPlayers: Partial<Player>[]) => void
+  initGame: (mode: GameMode, playerCount: number, aiPlayers: Partial<Player>[], preferredRole?: Role | null) => void
   setPhase: (phase: GamePhase) => void
   setWaitingForInput: (waiting: boolean) => void
   addMessage: (msg: GameMessage) => void
@@ -76,7 +76,7 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
   betResult: null,
   history: [],
 
-  initGame: (mode, playerCount, aiPlayers) => {
+  initGame: (mode, playerCount, aiPlayers, preferredRole) => {
     const roleConfig = ROLE_PRESETS[playerCount]
     if (!roleConfig) return
 
@@ -89,9 +89,18 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
     }
     const shuffledRoles = shuffle(roles)
 
+    // 80% 概率将首选身份分配给人类玩家（仅人机模式）
+    const humanCount = mode === 'human-ai' ? 1 : 0
+    if (humanCount > 0 && preferredRole) {
+      const roleIdx = shuffledRoles.indexOf(preferredRole)
+      if (roleIdx !== -1 && Math.random() < 0.8) {
+        // 交换到位置 0
+        ;[shuffledRoles[0], shuffledRoles[roleIdx]] = [shuffledRoles[roleIdx], shuffledRoles[0]]
+      }
+    }
+
     // Build players
     const players: Player[] = []
-    const humanCount = mode === 'human-ai' ? 1 : 0
 
     // Human player (always id=1)
     if (humanCount > 0) {

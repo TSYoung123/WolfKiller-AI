@@ -20,6 +20,11 @@ export async function callAI(
     return callBuiltinProxy(config, messages, options)
   }
 
+  // Anthropic 使用完全不同的 API 格式
+  if (config.provider === 'anthropic') {
+    return callAnthropic(config, messages, options)
+  }
+
   const baseURL = config.baseURL || PROVIDER_CONFIGS[config.provider]?.baseURL || ''
 
   if (!baseURL) {
@@ -31,15 +36,7 @@ export async function callAI(
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-  }
-
-  // Anthropic 使用不同的认证方式
-  if (config.provider === 'anthropic') {
-    headers['x-api-key'] = config.apiKey
-    headers['anthropic-version'] = '2023-06-01'
-    headers['anthropic-dangerous-direct-browser-access'] = 'true'
-  } else {
-    headers['Authorization'] = `Bearer ${config.apiKey}`
+    'Authorization': `Bearer ${config.apiKey}`,
   }
 
   const body: Record<string, any> = {
@@ -72,6 +69,66 @@ export async function callAI(
   // 普通输出
   const data = await response.json()
   return data.choices?.[0]?.message?.content || ''
+}
+
+/**
+ * Anthropic API 调用 - 使用 /messages 端点，请求格式与 OpenAI 不同
+ */
+async function callAnthropic(
+  config: AIConfig,
+  messages: ChatMessage[],
+  options?: { stream?: boolean; onChunk?: (chunk: string) => void }
+): Promise<string> {
+  const baseURL = config.baseURL || 'https://api.anthropic.com/v1'
+
+  if (!config.apiKey) {
+    throw new Error('未配置 API Key')
+  }
+
+  // Anthropic 将 system 消息分离，其余放入 messages 数组
+  const systemMsg = messages.find(m => m.role === 'system')
+  const chatMessages = messages
+    .filter(m => m.role !== 'system')
+    .map(m => ({ role: m.role, content: m.content }))
+
+  const body: Record<string, any> = {
+    model: config.model,
+    messages: chatMessages,
+    max_tokens: 500,
+  }
+
+  if (systemMsg) {
+    body.system = systemMsg.content
+  }
+
+  if (options?.stream) {
+    body.stream = true
+  }
+
+  const response = await fetch(`${baseURL}/messages`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': config.apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true',
+    },
+    body: JSON.stringify(body),
+  })
+
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`AI 请求失败 (${response.status}): ${errorText}`)
+  }
+
+  // 流式输出
+  if (options?.stream && options?.onChunk) {
+    return readAnthropicStream(response, options.onChunk)
+  }
+
+  // 普通输出：Anthropic 返回 { content: [{ type: "text", text: "..." }] }
+  const data = await response.json()
+  return data.content?.[0]?.text || ''
 }
 
 /**
@@ -145,6 +202,50 @@ async function readStream(
         if (content) {
           fullText += content
           onChunk(content)
+        }
+      } catch {
+        // skip malformed chunks
+      }
+    }
+  }
+
+  return fullText
+}
+
+/**
+ * Anthropic 流式输出解析
+ * 格式：event: content_block_delta\ndata: {"type":"content_block_delta","delta":{"type":"text_delta","text":"..."}}
+ */
+async function readAnthropicStream(
+  response: Response,
+  onChunk: (chunk: string) => void
+): Promise<string> {
+  const reader = response.body?.getReader()
+  if (!reader) throw new Error('无法读取流式响应')
+
+  const decoder = new TextDecoder()
+  let fullText = ''
+  let buffer = ''
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+
+    buffer += decoder.decode(value, { stream: true })
+    const lines = buffer.split('\n')
+    buffer = lines.pop() || ''
+
+    for (const line of lines) {
+      const trimmed = line.trim()
+      if (!trimmed || trimmed.startsWith('event:') || !trimmed.startsWith('data: ')) continue
+
+      try {
+        const json = JSON.parse(trimmed.slice(6))
+        // content_block_delta 事件包含文本增量
+        if (json.type === 'content_block_delta' && json.delta?.text) {
+          const text = json.delta.text
+          fullText += text
+          onChunk(text)
         }
       } catch {
         // skip malformed chunks

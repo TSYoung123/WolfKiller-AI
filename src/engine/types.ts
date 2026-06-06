@@ -2,6 +2,7 @@
 export type GamePhase =
   | 'idle'
   | 'role_assign'
+  | 'werewolf_recognize'
   | 'betting'
   | 'night_start'
   | 'werewolf_turn'

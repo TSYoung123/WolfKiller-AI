@@ -8,6 +8,8 @@ import { ChatLog } from '@/components/game/ChatLog'
 import { ActionBar } from '@/components/game/ActionBar'
 import { BettingPanel } from '@/components/game/BettingPanel'
 import { VotePanel } from '@/components/game/VotePanel'
+import { NightActionPanel } from '@/components/game/NightActionPanel'
+import { WerewolfRecognizePanel } from '@/components/game/WerewolfRecognizePanel'
 import { ToastContainer, toast } from '@/components/ui/toast'
 import { Button } from '@/components/ui/button'
 import { X, Pause, Play, SkipForward } from 'lucide-react'
@@ -96,7 +98,7 @@ export default function Game() {
 
   /** 根据游戏阶段切换背景音乐 */
   useEffect(() => {
-    if (phase.includes('night')) {
+    if (phase.includes('night') || phase === 'werewolf_recognize') {
       soundManager.playBGM('night')
     } else if (phase.includes('day') || phase.includes('vote') || phase.includes('speech')) {
       soundManager.playBGM('day')
@@ -142,6 +144,9 @@ export default function Game() {
     navigate('/')
   }
 
+  // 夜晚行动阶段（人狼/预言家/女巫/猎人）
+  const isNightActionPhase = ['werewolf_turn', 'seer_turn', 'witch_turn', 'hunter_shot'].includes(phase)
+
   // ========== 布局计算 ==========
 
   /** 将玩家平分为左右两列 */
@@ -179,7 +184,11 @@ export default function Game() {
 
         {/* 中列：聊天 + 控制 */}
         <div className="flex-1 flex flex-col min-w-0 gap-2">
-          {phase === 'vote_start' && waitingForInput ? (
+          {phase === 'werewolf_recognize' ? (
+            <WerewolfRecognizePanel />
+          ) : isNightActionPhase && waitingForInput ? (
+            <NightActionPanel />
+          ) : phase === 'vote_start' && waitingForInput ? (
             <VotePanel />
           ) : (
             <ChatLog messages={messages} />

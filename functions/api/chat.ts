@@ -2,10 +2,10 @@
  * AI 代理服务 —— Cloudflare Pages Function
  *
  * 前端请求 POST /api/chat
- * 服务端使用环境变量中的 API Key 转发到 LLM 服务
+ * 服务端使用环境变量中的 API Key 转发到 DeepSeek
  *
  * Cloudflare 环境变量：
- *   AI_API_KEY    - OpenAI 兼容格式 API Key（支持 DeepSeek / Gemini / Groq 等）
+ *   AI_API_KEY    - DeepSeek/OpenAI 兼容 API Key
  *   AI_BASE_URL   - 可选，默认 https://api.deepseek.com/v1
  *   AI_MODEL      - 可选，默认 deepseek-chat
  */

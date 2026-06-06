@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,8 +7,10 @@ import { Badge } from '@/components/ui/badge'
 import { useConfigStore } from '@/store/configStore'
 import { useGameStore } from '@/store/gameStore'
 import { toast } from '@/components/ui/toast'
-import { Settings, Sparkles, ChevronRight, Users, Bot } from 'lucide-react'
+import { Settings, Sparkles, ChevronRight, Bot } from 'lucide-react'
 import { useT } from '@/store/i18nStore'
+import { RoleSelectPanel } from '@/components/game/RoleSelectPanel'
+import type { Player, Role } from '@/engine/types'
 
 export default function Config() {
   const navigate = useNavigate()
@@ -22,6 +24,10 @@ export default function Config() {
 
   const { initGame } = useGameStore()
   const t = useT()
+
+  // 身份选择流程状态
+  const [showRoleSelect, setShowRoleSelect] = useState(false)
+  const pendingAIPlayers = useRef<Partial<Player>[]>([])
 
   // URL mode 参数优先应用（store 已从 localStorage 初始化，无需再 load）
   useEffect(() => {
@@ -38,6 +44,24 @@ export default function Config() {
     saveToStorage()
   }, [gameSettings])
 
+  // 开始游戏（可能先进入身份选择）
+  const startWithAPlayers = (aiPlayers: Partial<Player>[]) => {
+    if (gameSettings.mode === 'human-ai') {
+      pendingAIPlayers.current = aiPlayers
+      setShowRoleSelect(true)
+    } else {
+      initGame(gameSettings.mode, gameSettings.playerCount, aiPlayers)
+      navigate('/game')
+    }
+  }
+
+  // 身份确认后开始游戏
+  const handleRoleConfirm = (role: Role | null) => {
+    setShowRoleSelect(false)
+    initGame(gameSettings.mode, gameSettings.playerCount, pendingAIPlayers.current, role)
+    navigate('/game')
+  }
+
   // 使用内置模型开始游戏
   const handleStartBuiltin = () => {
     const builtinConfig = {
@@ -52,8 +76,7 @@ export default function Config() {
       modelConfig: builtinConfig,
       personality: undefined,
     }))
-    initGame(gameSettings.mode, gameSettings.playerCount, aiPlayers)
-    navigate('/game')
+    startWithAPlayers(aiPlayers)
   }
 
   // 使用自定义 API 开始游戏
@@ -64,15 +87,12 @@ export default function Config() {
       toast(t('config.configApiFirst'), 'error')
       return
     }
-
     const aiPlayers = aiSlots.map((slot, i) => ({
       name: `${gameSettings.mode === 'human-ai' ? i + 2 : i + 1}号`,
       modelConfig: slot.aiConfig,
       personality: slot.personality,
     }))
-
-    initGame(gameSettings.mode, gameSettings.playerCount, aiPlayers)
-    navigate('/game')
+    startWithAPlayers(aiPlayers)
   }
 
   // 模拟模式
@@ -89,12 +109,34 @@ export default function Config() {
       modelConfig: mockConfig,
       personality: undefined,
     }))
-    initGame(gameSettings.mode, gameSettings.playerCount, aiPlayers)
-    toast(t('config.mockStarted'), 'success')
-    navigate('/game')
+    if (gameSettings.mode === 'human-ai') {
+      pendingAIPlayers.current = aiPlayers
+      setShowRoleSelect(true)
+    } else {
+      initGame(gameSettings.mode, gameSettings.playerCount, aiPlayers)
+      toast(t('config.mockStarted'), 'success')
+      navigate('/game')
+    }
   }
 
   const hasCustomModels = slots.some(s => s.aiConfig.apiKey)
+
+  // 身份选择面板
+  if (showRoleSelect) {
+    return (
+      <div className="min-h-screen px-4 py-8 max-w-3xl mx-auto page-enter flex flex-col">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="font-title text-3xl gold-text">{t('config.title')}</h1>
+          <Button variant="ghost" onClick={() => setShowRoleSelect(false)}>{t('config.backHome')}</Button>
+        </div>
+        <RoleSelectPanel
+          playerCount={gameSettings.playerCount}
+          onConfirm={handleRoleConfirm}
+          onCancel={() => setShowRoleSelect(false)}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen px-4 py-8 max-w-3xl mx-auto page-enter">

@@ -111,6 +111,7 @@ const en: Record<TranslationKey, string> = {
   // ===== Phase =====
   'phase.idle': 'Waiting',
   'phase.role_assign': 'Role Assignment',
+  'phase.werewolf_recognize': 'Werewolf Recognition',
   'phase.betting': 'Betting',
   'phase.night_start': 'Night Falls',
   'phase.werewolf_turn': 'Werewolf Turn',
@@ -123,6 +124,7 @@ const en: Record<TranslationKey, string> = {
   'phase.vote_result': 'Vote Result',
   'phase.check_win': 'Win Check',
   'phase.game_over': 'Game Over',
+  'phase.hunter_shot': 'Hunter Shot',
 
   // ===== Roles =====
   'role.werewolf': 'Werewolf',
@@ -148,6 +150,40 @@ const en: Record<TranslationKey, string> = {
   'action.charCount': '{count}/80 chars',
   'action.selectVoteTarget': 'Select player to vote out',
   'action.abstain': 'Abstain',
+
+  // ===== Night Action Panel =====
+  'action.selectHunterTarget': 'Select player to take down',
+  'action.hunterShotDesc': 'Fire your gun and take someone with you',
+  'action.witchChooseAction': 'Choose your action',
+  'action.selectSaveTarget': 'Select player to save',
+  'action.selectPoisonTarget': 'Select player to poison',
+  'action.witchTonightKilled': 'Killed tonight: {name}',
+  'action.witchTonightVictim': 'Victim: {name}',
+  'action.witchNoKill': 'No one was killed tonight',
+  'action.save': 'Save',
+  'action.poison': 'Poison',
+  'action.back': 'Back',
+  'action.noTargets': 'No valid targets',
+
+  // ===== Werewolf Recognize =====
+  'recognize.title': 'Werewolf Recognition',
+  'recognize.desc': 'Remember your werewolf teammates, don\'t kill them by mistake',
+  'recognize.yourTeammates': 'Your werewolf teammates:',
+  'recognize.notWerewolf': 'You are not a werewolf. Please wait.',
+  'recognize.continue': 'Got it, continue',
+
+  // ===== Vote Tally =====
+  'vote.tally': 'Current Votes',
+  'vote.noVotes': 'No votes yet',
+  'vote.votedFor': '{voter} voted for {target}',
+  'vote.playerVoted': '{voter} → {target}',
+
+  // ===== Role Select =====
+  'roleSelect.title': 'Choose Role',
+  'roleSelect.desc': 'Pick your preferred role (80% chance to get it)',
+  'roleSelect.random': 'Random',
+  'roleSelect.randomDesc': 'Fully random role assignment',
+  'roleSelect.confirm': 'Confirm',
 
   // ===== PlayerColumn =====
   'player.thinking': 'Thinking...',
