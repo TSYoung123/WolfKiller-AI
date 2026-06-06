@@ -99,3 +99,41 @@
     text-wrap: balance;
   }
 }
+
+/* Accessibility: Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .moon-glow {
+    animation: none !important;
+    filter: drop-shadow(0 0 20px rgba(240, 192, 96, 0.4));
+  }
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better interactive elements */
+@layer base {
+  button:not(:disabled),
+  [role="button"],
+  a {
+    cursor: pointer;
+  }
+}
+
+/* Phase-specific background transitions */
+.phase-night {
+  background: radial-gradient(ellipse at 50% 100%, rgba(20, 10, 60, 0.3) 0%, transparent 60%);
+  transition: background 1.5s ease-out;
+}
+.phase-day {
+  background: radial-gradient(ellipse at 50% 0%, rgba(240, 192, 96, 0.06) 0%, transparent 50%);
+  transition: background 1.5s ease-out;
+}

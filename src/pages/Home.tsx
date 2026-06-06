@@ -5,7 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { useGameStore } from '@/store/gameStore'
 import { useConfigStore } from '@/store/configStore'
-import { Sparkles, Rocket, Settings } from 'lucide-react'
+import { Sparkles, Rocket, Settings, Theater, Bot } from 'lucide-react'
 import { soundManager } from '@/lib/SoundManager'
 
 // 星星类型：普通闪烁 / 漂浮 / 流星
@@ -174,18 +174,20 @@ export default function Home() {
           variant="gold"
           size="lg"
           onClick={() => navigate('/config?mode=human-ai')}
-          className="min-w-[180px] rounded-full opacity-80 hover:opacity-100"
+          className="min-w-[180px] rounded-full opacity-80 hover:opacity-100 transition-opacity duration-200"
         >
-          🎭 开始游戏
+          <Theater className="h-4 w-4 mr-1" />
+          开始游戏
           <span className="ml-1 text-xs opacity-70">人机对战</span>
         </Button>
         <Button
           variant="blood"
           size="lg"
           onClick={() => navigate('/config?mode=ai-only')}
-          className="min-w-[180px] rounded-full"
+          className="min-w-[180px] rounded-full hover:brightness-110 transition-all duration-200"
         >
-          🤖 赛博斗蛐蛐
+          <Bot className="h-4 w-4 mr-1" />
+          赛博斗蛐蛐
           <span className="ml-1 text-xs opacity-70">纯AI观战</span>
         </Button>
       </div>

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { useConfigStore } from '@/store/configStore'
 import { useGameStore } from '@/store/gameStore'
 import { toast } from '@/components/ui/toast'
-import { Settings, Sparkles, ChevronRight } from 'lucide-react'
+import { Settings, Sparkles, ChevronRight, Users, Bot } from 'lucide-react'
 
 export default function Config() {
   const navigate = useNavigate()
@@ -120,8 +120,8 @@ export default function Config() {
                 value={gameSettings.mode}
                 onChange={e => setGameMode(e.target.value as any)}
                 options={[
-                  { value: 'human-ai', label: '🎭 人机对战' },
-                  { value: 'ai-only', label: '🤖 赛博斗蛐蛐' },
+                  { value: 'human-ai', label: '人机对战' },
+                  { value: 'ai-only', label: '赛博斗蛐蛐' },
                 ]}
               />
             </div>
