@@ -172,10 +172,19 @@ export class GameEngine {
   private announceWinner(winner: 'villager' | 'werewolf') {
     const store = useGameStore.getState()
     const mode = useGameStore.getState().mode
-    // 赛博模式：玩家是观战者，狼人赢 = 下注失败；人机模式：玩家是好人阵营
-    const playerWins = mode === 'ai-only'
-      ? winner === 'villager' // 观战者默认押好人
-      : winner === 'villager'
+    // 根据玩家实际阵营或下注结果判定胜负
+    const playerWins = (() => {
+      if (mode === 'ai-only') {
+        // 赛博模式：下注的玩家所在阵营获胜才算赢
+        const betPlayer = store.players.find(p => p.id === store.betPlayerId)
+        const betIsWerewolf = betPlayer?.role === 'werewolf'
+        return betIsWerewolf ? winner === 'werewolf' : winner === 'villager'
+      }
+      // 人机模式：根据人类玩家的实际身份判定
+      const humanPlayer = store.players.find(p => !p.isAI)
+      const humanIsWerewolf = humanPlayer?.role === 'werewolf'
+      return humanIsWerewolf ? winner === 'werewolf' : winner === 'villager'
+    })()
     soundManager.play(playerWins ? 'win' : 'lose')
     soundManager.stopBGM()
     store.addMessage({

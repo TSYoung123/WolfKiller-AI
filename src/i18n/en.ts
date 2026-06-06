@@ -50,6 +50,7 @@ const en: Record<TranslationKey, string> = {
   'config.advancedSettings': 'Advanced Settings',
   'config.advancedDesc': 'Configure API models, volume, sound effects, etc.',
   'config.configApiFirst': 'Please configure AI model in Settings first',
+  'config.notEnoughSlots': 'Not enough AI slots: {required} required but only {actual} configured. Add more AI models in Settings.',
 
   // ===== Settings =====
   'settings.title': 'Settings',

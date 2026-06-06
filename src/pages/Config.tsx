@@ -83,11 +83,16 @@ export default function Config() {
   const handleStartCustom = () => {
     saveToStorage()
     const aiSlots = slots.filter(s => s.aiConfig.apiKey)
+    const requiredAiCount = gameSettings.playerCount - (gameSettings.mode === 'human-ai' ? 1 : 0)
     if (aiSlots.length === 0) {
       toast(t('config.configApiFirst'), 'error')
       return
     }
-    const aiPlayers = aiSlots.map((slot, i) => ({
+    if (aiSlots.length < requiredAiCount) {
+      toast(t('config.notEnoughSlots', { required: String(requiredAiCount), actual: String(aiSlots.length) }), 'error')
+      return
+    }
+    const aiPlayers = aiSlots.slice(0, requiredAiCount).map((slot, i) => ({
       name: `${gameSettings.mode === 'human-ai' ? i + 2 : i + 1}号`,
       modelConfig: slot.aiConfig,
       personality: slot.personality,

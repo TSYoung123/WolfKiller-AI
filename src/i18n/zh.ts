@@ -48,6 +48,7 @@ const zh = {
   'config.advancedSettings': '高级设置',
   'config.advancedDesc': '配置 API 模型、音量、音效等',
   'config.configApiFirst': '请先在设置中配置 AI 模型',
+  'config.notEnoughSlots': 'AI 槽位不足：需要 {required} 个，当前仅配置 {actual} 个。请在设置中添加更多 AI 模型。',
 
   // ===== Settings =====
   'settings.title': '设置',
