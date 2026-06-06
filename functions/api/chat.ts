@@ -22,8 +22,19 @@ const RATE_LIMIT_WINDOW_MS = 60_000
 const RATE_LIMIT_MAX = 10
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
 
+let lastCleanupAt = 0
+
 function checkRateLimit(ip: string): boolean {
   const now = Date.now()
+
+  // 懒清理：每分钟清理一次过期记录
+  if (now - lastCleanupAt > 60_000) {
+    lastCleanupAt = now
+    for (const [key, entry] of rateLimitMap) {
+      if (now >= entry.resetAt) rateLimitMap.delete(key)
+    }
+  }
+
   const entry = rateLimitMap.get(ip)
 
   if (!entry || now >= entry.resetAt) {
@@ -35,14 +46,6 @@ function checkRateLimit(ip: string): boolean {
   entry.count++
   return true
 }
-
-// 定期清理过期记录
-setInterval(() => {
-  const now = Date.now()
-  for (const [ip, entry] of rateLimitMap) {
-    if (now >= entry.resetAt) rateLimitMap.delete(ip)
-  }
-}, 60_000)
 
 // ==================== 请求体大小限制 ====================
 
