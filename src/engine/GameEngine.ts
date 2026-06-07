@@ -621,7 +621,7 @@ export class GameEngine {
    */
   private async executeSpeechPhase() {
     const store = useGameStore.getState()
-    const alivePlayers = store.players.filter(p => p.isAlive)
+    const alivePlayers = store.players.filter(p => p.isAlive).sort((a, b) => a.id - b.id)
     const mode = useGameStore.getState().mode
 
     for (const player of alivePlayers) {
@@ -701,7 +701,7 @@ export class GameEngine {
    */
   private async executeVotePhase() {
     const store = useGameStore.getState()
-    const alivePlayers = store.players.filter(p => p.isAlive)
+    const alivePlayers = store.players.filter(p => p.isAlive).sort((a, b) => a.id - b.id)
     store.setVotes({})
     const mode = useGameStore.getState().mode
 
