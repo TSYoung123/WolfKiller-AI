@@ -14,6 +14,9 @@ export default function Result() {
   const { players, winner, round, messages, mode, betPlayerId, betResult, saveHistory } = useGameStore()
   const t = useT()
 
+  // 按号码排序显示
+  const sortedPlayers = [...players].sort((a, b) => a.id - b.id)
+
   const savedRef = useRef(false)
 
   useEffect(() => {
@@ -39,11 +42,6 @@ export default function Result() {
       betResult,
     }
     saveHistory(game)
-
-    // 离开结果页时重置游戏状态，避免返回首页时残留游戏内容
-    return () => {
-      useGameStore.getState().resetGame()
-    }
   }, [])
 
   return (
@@ -114,7 +112,7 @@ export default function Result() {
         </CardHeader>
         <CardContent>
           <div className="space-y-1.5">
-            {players.map(player => (
+            {sortedPlayers.map(player => (
               <div
                 key={player.id}
                 className={cn(
@@ -177,11 +175,11 @@ export default function Result() {
 
       {/* Actions */}
       <div className="flex gap-3">
-        <Button variant="gold" size="lg" className="rounded-full gap-2 press-feedback" onClick={() => navigate('/config')}>
+        <Button variant="gold" size="lg" className="rounded-full gap-2 press-feedback" onClick={() => { useGameStore.getState().resetGame(); navigate('/config') }}>
           <RotateCcw className="h-4 w-4" />
           {t('result.playAgain')}
         </Button>
-        <Button variant="outline" size="lg" className="rounded-full gap-2 press-feedback" onClick={() => navigate('/')}>
+        <Button variant="outline" size="lg" className="rounded-full gap-2 press-feedback" onClick={() => { useGameStore.getState().resetGame(); navigate('/') }}>
           <Home className="h-4 w-4" />
           {t('result.backHome')}
         </Button>
