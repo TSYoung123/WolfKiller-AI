@@ -76,7 +76,10 @@ export function NightActionPanel() {
     }
     if (currentPhase === 'witch_turn' && witchAction === 'poison')
       return alivePlayers.filter(p => p.id !== humanPlayer.id)
-    // seer_turn / hunter_shot：所有存活玩家（排除自己）
+    if (currentPhase === 'hunter_shot')
+      // 猎人开枪时自身可能已被标记死亡，目标为所有存活玩家
+      return alivePlayers
+    // seer_turn：所有存活玩家（排除自己）
     return alivePlayers.filter(p => p.id !== humanPlayer.id)
   }
 

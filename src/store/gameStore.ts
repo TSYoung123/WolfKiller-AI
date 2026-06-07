@@ -99,13 +99,16 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
       }
     }
 
-    // Build players
+    // Build players with randomized IDs
     const players: Player[] = []
 
-    // Human player (always id=1)
+    // Generate random IDs for all slots
+    const allIds = shuffle(Array.from({ length: playerCount }, (_, i) => i + 1))
+
+    // Human player (random ID)
     if (humanCount > 0) {
       players.push({
-        id: 1,
+        id: allIds[0],
         name: '你',
         role: shuffledRoles[0],
         isAlive: true,
@@ -113,12 +116,13 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
       })
     }
 
-    // AI players
+    // AI players (random IDs)
     for (let i = 0; i < playerCount - humanCount; i++) {
       const aiInfo = aiPlayers[i] || {}
+      const pid = allIds[humanCount + i]
       players.push({
-        id: humanCount + i + 1,
-        name: aiInfo.name || `${humanCount + i + 1}号`,
+        id: pid,
+        name: aiInfo.name || `${pid}号`,
         role: shuffledRoles[humanCount + i],
         isAlive: true,
         isAI: true,

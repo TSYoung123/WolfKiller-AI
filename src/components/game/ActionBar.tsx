@@ -65,7 +65,7 @@ export function ActionBar({ phase, mode }: ActionBarProps) {
             placeholder={t('action.speechPlaceholder')}
             value={speechText}
             onChange={e => setSpeechText(e.target.value)}
-            maxLength={80}
+            maxLength={500}
             onKeyDown={e => {
               if (e.key === 'Enter' && speechText.trim()) {
                 resolveInput(speechText.trim())

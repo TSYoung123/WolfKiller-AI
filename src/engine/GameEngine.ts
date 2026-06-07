@@ -556,7 +556,6 @@ export class GameEngine {
     // 执行死亡 + 触发猎人技能
     if (deaths.length > 0) soundManager.play('death')
     for (const id of deaths) {
-      store.killPlayer(id)
       const player = store.players.find(p => p.id === id)
 
       store.addMessage({
@@ -565,9 +564,12 @@ export class GameEngine {
         round: store.round, phase: 'night_end',
       })
 
-      // 猎人被动触发：非毒杀死亡时可开枪带走一人
+      // 猎人被动触发：非毒杀死亡时先开枪再标记死亡
       if (player?.role === 'hunter' && poisonedId !== id) {
         await this.executeHunterShot(player)
+        store.killPlayer(id)
+      } else {
+        store.killPlayer(id)
       }
     }
 
@@ -799,7 +801,6 @@ export class GameEngine {
     } else {
       // 放逐最高票玩家
       const exiled = store.players.find(p => p.id === exiledId)
-      store.killPlayer(exiledId)
       soundManager.play('death')
       store.addMessage({
         playerId: 0, playerName: '系统',
@@ -807,21 +808,39 @@ export class GameEngine {
         round: store.round, phase: 'vote_result',
       })
 
-      // AI 遗言（简化处理）
-      if (exiled?.isAI && exiled.modelConfig) {
-        store.addMessage({
-          playerId: exiled.id,
-          playerName: exiled.name,
-          content: '我的遗言... 请继续战斗。',
-          round: store.round,
-          phase: 'vote_result',
-        })
-      }
-
-      // 猎人被放逐 → 触发开枪技能
+      // 猎人被放逐 → 先开枪再标记死亡
       if (exiled?.role === 'hunter') {
         await this.pauseableSleep(500)
         await this.executeHunterShot(exiled)
+      }
+      store.killPlayer(exiledId)
+
+      // AI 遗言
+      if (exiled?.isAI && exiled.modelConfig) {
+        const action = await getAIAction(exiled, 'day_speech')
+        store.addMessage({
+          playerId: exiled.id,
+          playerName: exiled.name,
+          content: `【遗言】${action.content || '我的遗言... 请继续战斗。'}`,
+          round: store.round,
+          phase: 'vote_result',
+        })
+      } else if (!exiled?.isAI) {
+        // 真人玩家遗言 - 等待输入
+        store.addMessage({
+          playerId: 0, playerName: '系统',
+          content: `📢 ${exiled?.name || exiledId + '号'} 请发表遗言...`,
+          round: store.round, phase: 'vote_result',
+        })
+        store.setWaitingForInput(true)
+        const lastWords = await store.waitForInput()
+        store.addMessage({
+          playerId: exiled?.id || exiledId,
+          playerName: exiled?.name || exiledId + '号',
+          content: `【遗言】${lastWords || '（沉默）'}`,
+          round: store.round,
+          phase: 'vote_result',
+        })
       }
     }
 
