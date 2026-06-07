@@ -148,7 +148,7 @@ const en: Record<TranslationKey, string> = {
   'action.noMedicine': 'Skip potion',
   'action.speechPlaceholder': 'Type your speech...',
   'action.speech': 'Speak',
-  'action.charCount': '{count}/80 chars',
+  'action.charCount': '{count}/500 chars',
   'action.selectVoteTarget': 'Select player to vote out',
   'action.abstain': 'Abstain',
 

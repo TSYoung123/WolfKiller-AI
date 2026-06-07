@@ -146,7 +146,7 @@ const zh = {
   'action.noMedicine': '不用药',
   'action.speechPlaceholder': '输入你的发言...',
   'action.speech': '发言',
-  'action.charCount': '{count}/80 字',
+  'action.charCount': '{count}/500 字',
   'action.selectVoteTarget': '选择你要投票放逐的玩家',
   'action.abstain': '弃权',
 
