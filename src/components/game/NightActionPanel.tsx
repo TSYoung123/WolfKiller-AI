@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { Swords, Eye, FlaskConical, Crosshair, UserX } from 'lucide-react'
 import { soundManager } from '@/lib/SoundManager'
 import { useT } from '@/store/i18nStore'
+import { getWitchState } from '@/agents/AgentManager'
 import type { GamePhase } from '@/engine/types'
 
 type NightPhase = 'werewolf_turn' | 'seer_turn' | 'witch_turn' | 'hunter_shot'
@@ -54,6 +55,8 @@ export function NightActionPanel() {
   const [selectedId, setSelectedId] = useState<number | null>(null)
   const [witchAction, setWitchAction] = useState<'save' | 'poison' | null>(null)
   const t = useT()
+
+  const { hasAntidote, hasPoison } = getWitchState()
 
   const currentPhase = phase as NightPhase
   const config = PHASE_CONFIG[currentPhase]
@@ -166,17 +169,18 @@ export function NightActionPanel() {
           <Button
             variant="outline"
             onClick={() => { soundManager.play('click'); setWitchAction('save') }}
-            disabled={!killedPlayer}
+            disabled={!killedPlayer || !hasAntidote}
             className="rounded-full gap-1.5 px-6 py-5 text-base border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500/60 disabled:opacity-40"
           >
-            💊 {t('action.save')}
+            💊 {t('action.save')}{!hasAntidote && ' (已用)'}
           </Button>
           <Button
             variant="outline"
             onClick={() => { soundManager.play('click'); setWitchAction('poison') }}
-            className="rounded-full gap-1.5 px-6 py-5 text-base border-purple-500/40 text-purple-400 hover:bg-purple-500/10 hover:border-purple-500/60"
+            disabled={!hasPoison}
+            className="rounded-full gap-1.5 px-6 py-5 text-base border-purple-500/40 text-purple-400 hover:bg-purple-500/10 hover:border-purple-500/60 disabled:opacity-40"
           >
-            ☠️ {t('action.poison')}
+            ☠️ {t('action.poison')}{!hasPoison && ' (已用)'}
           </Button>
           <Button
             variant="ghost"

@@ -1,5 +1,5 @@
 import { useGameStore } from '@/store/gameStore'
-import { getAIAction, resetAgentState, useWitchAntidote, useWitchPoison, addSeerCheck } from '@/agents/AgentManager'
+import { getAIAction, resetAgentState, useWitchAntidote, useWitchPoison, addSeerCheck, getWitchState } from '@/agents/AgentManager'
 import { sleep } from '@/lib/utils'
 import type { GamePhase, Player, AIAction } from '@/engine/types'
 import { getPhaseThinking, getSpeechThinking } from '@/agents/ThinkingPhrases'
@@ -523,10 +523,11 @@ export class GameEngine {
   /** 应用女巫的用药效果（解药/毒药） */
   private applyWitchAction(action: AIAction) {
     const store = useGameStore.getState()
-    if (action.type === 'save' && action.targetId) {
+    const { hasAntidote, hasPoison } = getWitchState()
+    if (action.type === 'save' && action.targetId && hasAntidote) {
       store.setNightResult({ savedId: action.targetId })
       useWitchAntidote() // 解药使用后不可再用
-    } else if (action.type === 'poison' && action.targetId) {
+    } else if (action.type === 'poison' && action.targetId && hasPoison) {
       store.setNightResult({ poisonedId: action.targetId })
       useWitchPoison()   // 毒药使用后不可再用
     }
