@@ -150,9 +150,17 @@ function parseActionResponse(response: string, phase: GamePhase, player: Player)
   const parsed = parseAIJSON<{ targetId?: number; action?: string; reasoning?: string }>(response, {})
 
   if (phase === 'werewolf_turn') {
+    // 校验：狼人不能击杀队友
+    let finalTargetId = parsed.targetId || fallback.targetId
+    if (finalTargetId) {
+      const target = useGameStore.getState().players.find(p => p.id === finalTargetId)
+      if (target?.role === 'werewolf') {
+        finalTargetId = fallback.targetId
+      }
+    }
     return {
       type: 'kill',
-      targetId: parsed.targetId || fallback.targetId,
+      targetId: finalTargetId,
       reasoning: parsed.reasoning,
     }
   }
@@ -177,9 +185,14 @@ function parseActionResponse(response: string, phase: GamePhase, player: Player)
   }
 
   if (phase === 'vote_start') {
+    // 确保不会投票给自己
+    let voteTarget = parsed.targetId || fallback.targetId
+    if (voteTarget === player.id) {
+      voteTarget = fallback.targetId
+    }
     return {
       type: 'vote',
-      targetId: parsed.targetId || fallback.targetId,
+      targetId: voteTarget,
       reasoning: parsed.reasoning,
     }
   }
@@ -199,20 +212,22 @@ function parseActionResponse(response: string, phase: GamePhase, player: Player)
  * 默认行动（AI 调用失败时使用）
  */
 function getDefaultAction(phase: GamePhase, player: Player, alivePlayers: Player[]): AIAction {
-  const others = alivePlayers.filter(p => p.id !== player.id && p.role !== player.role)
-  const randomTarget = others.length > 0 ? others[Math.floor(Math.random() * others.length)] : null
+  const nonSelf = alivePlayers.filter(p => p.id !== player.id)
+  const enemies = nonSelf.filter(p => p.role !== player.role)
+  const randomEnemy = enemies.length > 0 ? enemies[Math.floor(Math.random() * enemies.length)] : nonSelf[0] || null
+  const randomNonSelf = nonSelf.length > 0 ? nonSelf[Math.floor(Math.random() * nonSelf.length)] : null
 
   switch (phase) {
     case 'werewolf_turn':
-      return { type: 'kill', targetId: randomTarget?.id ?? undefined, reasoning: '随机选择' }
+      return { type: 'kill', targetId: randomEnemy?.id ?? undefined, reasoning: '随机选择' }
     case 'seer_turn':
-      return { type: 'check', targetId: randomTarget?.id ?? undefined, reasoning: '随机查验' }
+      return { type: 'check', targetId: randomNonSelf?.id ?? undefined, reasoning: '随机查验' }
     case 'witch_turn':
       return { type: 'save', targetId: undefined, reasoning: '保守选择不用药' }
     case 'vote_start':
-      return { type: 'vote', targetId: randomTarget?.id ?? undefined, reasoning: '随机投票' }
+      return { type: 'vote', targetId: randomNonSelf?.id ?? undefined, reasoning: '随机投票' }
     case 'hunter_shot':
-      return { type: 'hunter_shot', targetId: randomTarget?.id ?? undefined, reasoning: '随机开枪' }
+      return { type: 'hunter_shot', targetId: randomEnemy?.id ?? undefined, reasoning: '随机开枪' }
     case 'day_speech':
       return { type: 'speech', content: '我觉得我们应该仔细观察每个人的发言。' }
     default:

@@ -381,10 +381,25 @@ function pickRandom<T>(arr: T[]): T | undefined {
 function mockWerewolfKill(userMsg: string): string {
   const aliveIds = extractAliveIds(userMsg)
   const myId = extractMyId(userMsg)
-  // 狼人不杀狼队友 - 简单处理：排除自己
-  const targets = aliveIds.filter(id => id !== myId)
+  // 狼人不杀狼队友 - 从消息中提取队友ID并排除
+  const teammateIds = extractTeammateIds(userMsg)
+  const excludeSet = new Set([myId, ...teammateIds])
+  const targets = aliveIds.filter(id => !excludeSet.has(id))
   const target = pickRandom(targets)
-  return JSON.stringify({ targetId: target ?? aliveIds[0], reasoning: '感觉这个人比较危险' })
+  return JSON.stringify({ targetId: target ?? aliveIds.find(id => !excludeSet.has(id)) ?? aliveIds[0], reasoning: '感觉这个人比较危险' })
+}
+
+// 从用户消息中提取狼人队友ID
+function extractTeammateIds(userMsg: string): number[] {
+  const match = userMsg.match(/你的狼人队友[：:]([\s\S]*?)(?:\n|$)/)
+  if (!match) return []
+  const ids: number[] = []
+  const re = /(\d+)号/g
+  let m
+  while ((m = re.exec(match[1])) !== null) {
+    ids.push(parseInt(m[1]))
+  }
+  return ids
 }
 
 function mockSeerCheck(userMsg: string): string {
@@ -418,7 +433,9 @@ function mockVote(userMsg: string): string {
   const myId = extractMyId(userMsg)
   const targets = aliveIds.filter(id => id !== myId)
   const target = pickRandom(targets)
-  return JSON.stringify({ targetId: target ?? aliveIds[0], reasoning: '根据发言分析，最怀疑这个人' })
+  // 确保不会投自己
+  const finalTarget = target !== undefined && target !== myId ? target : targets[0]
+  return JSON.stringify({ targetId: finalTarget, reasoning: '根据发言分析，最怀疑这个人' })
 }
 
 function mockHunterShot(userMsg: string): string {

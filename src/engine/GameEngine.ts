@@ -373,7 +373,7 @@ export class GameEngine {
             killVotes[action.targetId] = (killVotes[action.targetId] || 0) + 1
           }
         } catch {
-          const targets = store.players.filter(p => p.isAlive && p.id !== wolf.id)
+          const targets = store.players.filter(p => p.isAlive && p.role !== 'werewolf')
           if (targets.length > 0) {
             const t = targets[Math.floor(Math.random() * targets.length)]
             killVotes[t.id] = (killVotes[t.id] || 0) + 1

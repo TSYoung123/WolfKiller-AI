@@ -39,7 +39,7 @@ export function ActionBar({ phase, mode }: ActionBarProps) {
 
   // Human-AI mode
   const isNightPhase = ['werewolf_turn', 'seer_turn', 'witch_turn', 'hunter_shot'].includes(phase)
-  const isSpeechPhase = phase === 'day_speech'
+  const isSpeechPhase = phase === 'day_speech' || phase === 'vote_result'
 
   // Not waiting for input (or night phase handled by NightActionPanel in center)
   if (!waitingForInput || isNightPhase) {

@@ -110,7 +110,7 @@ export function getWerewolfPrompt(
 
   let actionInstruction = ''
   if (phase === 'werewolf_turn') {
-    actionInstruction = '现在是夜晚，请选择你要击杀的目标。回复JSON格式：{"targetId": 玩家编号, "reasoning": "原因"}'
+    actionInstruction = '现在是夜晚，请选择你要击杀的目标（不要选择狼队友！）。回复JSON格式：{"targetId": 玩家编号, "reasoning": "原因"}'
   } else if (phase === 'day_speech') {
     actionInstruction = '现在是白天发言阶段，请伪装好人身份发表言论。'
   } else if (phase === 'vote_start') {

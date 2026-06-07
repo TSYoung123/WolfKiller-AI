@@ -71,7 +71,7 @@ export function NightActionPanel() {
   const getTargets = () => {
     if (!humanPlayer) return alivePlayers
     if (currentPhase === 'werewolf_turn')
-      return alivePlayers.filter(p => p.id !== humanPlayer.id)
+      return alivePlayers.filter(p => p.role !== 'werewolf')
     if (currentPhase === 'witch_turn' && witchAction === 'save') {
       // 解药只能救今晚被杀的人
       if (nightResult.killedId === null) return []
@@ -80,8 +80,8 @@ export function NightActionPanel() {
     if (currentPhase === 'witch_turn' && witchAction === 'poison')
       return alivePlayers.filter(p => p.id !== humanPlayer.id)
     if (currentPhase === 'hunter_shot')
-      // 猎人开枪时自身可能已被标记死亡，目标为所有存活玩家
-      return alivePlayers
+      // 猎人开枪时自身可能已被标记死亡，排除自己
+      return alivePlayers.filter(p => p.id !== humanPlayer.id)
     // seer_turn：所有存活玩家（排除自己）
     return alivePlayers.filter(p => p.id !== humanPlayer.id)
   }
