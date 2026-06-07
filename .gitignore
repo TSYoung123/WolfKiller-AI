@@ -21,6 +21,7 @@ __pycache__/
 
 # Screenshots (optional, keep repo small)
 *.png
+*.exe
 .vercel
 .vercel-tmp
 .wrangler

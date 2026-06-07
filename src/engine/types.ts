@@ -95,7 +95,7 @@ export const ROLE_PRESETS: Record<number, Record<Role, number>> = {
   6: { werewolf: 2, villager: 2, seer: 1, witch: 1, hunter: 0 },
   8: { werewolf: 2, villager: 3, seer: 1, witch: 1, hunter: 1 },
   10: { werewolf: 3, villager: 4, seer: 1, witch: 1, hunter: 1 },
-  12: { werewolf: 4, villager: 4, seer: 1, witch: 1, hunter: 2 },
+  12: { werewolf: 4, villager: 5, seer: 1, witch: 1, hunter: 1 },
 }
 
 // ===== 模型预设 =====

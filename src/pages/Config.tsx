@@ -72,7 +72,6 @@ export default function Config() {
     }
     const aiCount = gameSettings.playerCount - (gameSettings.mode === 'human-ai' ? 1 : 0)
     const aiPlayers = Array.from({ length: aiCount }, (_, i) => ({
-      name: `${gameSettings.mode === 'human-ai' ? i + 2 : i + 1}号`,
       modelConfig: builtinConfig,
       personality: undefined,
     }))
@@ -93,7 +92,6 @@ export default function Config() {
       return
     }
     const aiPlayers = aiSlots.slice(0, requiredAiCount).map((slot, i) => ({
-      name: `${gameSettings.mode === 'human-ai' ? i + 2 : i + 1}号`,
       modelConfig: slot.aiConfig,
       personality: slot.personality,
     }))
@@ -110,7 +108,6 @@ export default function Config() {
     }
     const aiCount = gameSettings.playerCount - (gameSettings.mode === 'human-ai' ? 1 : 0)
     const aiPlayers = Array.from({ length: aiCount }, (_, i) => ({
-      name: `${gameSettings.mode === 'human-ai' ? i + 2 : i + 1}号`,
       modelConfig: mockConfig,
       personality: undefined,
     }))
