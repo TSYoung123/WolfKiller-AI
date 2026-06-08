@@ -38,74 +38,68 @@ export function AIPersonalityEditor({ profile, onChange, showAdvancedToggle = tr
     onChange({ ...profile, abilities: { ...profile.abilities, [key]: value } })
   }
 
-  // ===== 高级模式：自定义提示词 =====
-  if (showAdvancedToggle && isAdvanced) {
-    return (
-      <div className="space-y-4">
-        {/* 模式切换 */}
-        <ModeToggle
-          isAdvanced
-          onSwitchSimple={() => setIsAdvanced(false)}
-          onSwitchAdvanced={() => setIsAdvanced(true)}
-        />
-
-        {/* 自定义提示词 */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <p className="font-medium text-sm">{t('settings.customPrompt')}</p>
-              <p className="text-xs text-muted-foreground">{t('settings.customPromptDesc')}</p>
-            </div>
-            <button
-              onClick={() => update({ useCustomPrompt: !profile.useCustomPrompt })}
-              className={`relative w-12 h-6 rounded-full transition-colors ${
-                profile.useCustomPrompt ? 'bg-gold/70' : 'bg-border'
-              }`}
-            >
-              <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
-                profile.useCustomPrompt ? 'left-[26px]' : 'left-0.5'
-              }`} />
-            </button>
-          </div>
-          {profile.useCustomPrompt && (
-            <textarea
-              value={profile.customSystemPrompt || ''}
-              onChange={e => update({ customSystemPrompt: e.target.value })}
-              placeholder={t('settings.customPromptPlaceholder')}
-              className="w-full h-40 px-3 py-2 text-sm bg-surface border border-border/40 rounded-lg resize-y focus:outline-none focus:ring-1 focus:ring-gold/50 text-foreground"
-            />
-          )}
-        </div>
-
-        {/* 即使是高级模式，也允许编辑基本人设作为 fallback */}
-        {!profile.useCustomPrompt && (
-          <SimpleEditor
-            profile={profile}
-            onChange={onChange}
-            update={update}
-            updateAbility={updateAbility}
-          />
-        )}
-      </div>
-    )
-  }
-
-  // ===== 简单模式 =====
   return (
     <div className="space-y-4">
+      {/* 模式切换 - 始终渲染同一个元素避免 remount */}
       {showAdvancedToggle && (
         <ModeToggle
-          isAdvanced={false}
+          isAdvanced={isAdvanced}
           onSwitchSimple={() => setIsAdvanced(false)}
           onSwitchAdvanced={() => setIsAdvanced(true)}
         />
       )}
-      <SimpleEditor
-        profile={profile}
-        onChange={onChange}
-        update={update}
-        updateAbility={updateAbility}
-      />
+
+      {/* 高级模式内容 */}
+      {showAdvancedToggle && isAdvanced && (
+        <>
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <p className="font-medium text-sm">{t('settings.customPrompt')}</p>
+                <p className="text-xs text-muted-foreground">{t('settings.customPromptDesc')}</p>
+              </div>
+              <button
+                onClick={() => update({ useCustomPrompt: !profile.useCustomPrompt })}
+                className={`relative w-12 h-6 rounded-full transition-colors ${
+                  profile.useCustomPrompt ? 'bg-gold/70' : 'bg-border'
+                }`}
+              >
+                <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                  profile.useCustomPrompt ? 'left-[26px]' : 'left-0.5'
+                }`} />
+              </button>
+            </div>
+            {profile.useCustomPrompt && (
+              <textarea
+                value={profile.customSystemPrompt || ''}
+                onChange={e => update({ customSystemPrompt: e.target.value })}
+                placeholder={t('settings.customPromptPlaceholder')}
+                className="w-full h-40 px-3 py-2 text-sm bg-surface border border-border/40 rounded-lg resize-y focus:outline-none focus:ring-1 focus:ring-gold/50 text-foreground"
+              />
+            )}
+          </div>
+
+          {/* 高级模式下未启用自定义提示词时显示基本人设 */}
+          {!profile.useCustomPrompt && (
+            <SimpleEditor
+              profile={profile}
+              onChange={onChange}
+              update={update}
+              updateAbility={updateAbility}
+            />
+          )}
+        </>
+      )}
+
+      {/* 简单模式内容 */}
+      {(!showAdvancedToggle || !isAdvanced) && (
+        <SimpleEditor
+          profile={profile}
+          onChange={onChange}
+          update={update}
+          updateAbility={updateAbility}
+        />
+      )}
     </div>
   )
 }
