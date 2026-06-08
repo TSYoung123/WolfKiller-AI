@@ -43,6 +43,7 @@ export interface Player {
   isAI: boolean
   modelConfig?: AIConfig
   personality?: string
+  profile?: AIPersonalityProfile
 }
 
 // ===== 夜晚结果 =====
@@ -135,6 +136,53 @@ export const PROVIDER_CONFIGS: Record<AIProvider, { name: string; baseURL: strin
     baseURL: '/api/chat',
     models: ['deepseek-chat'],
   },
+}
+
+// ===== AI 能力指标 =====
+export interface AIAbilities {
+  logic: number       // 逻辑推理 (0-100)
+  deception: number   // 欺骗伪装 (0-100)
+  persuasion: number  // 说服煽动 (0-100)
+  observation: number // 观察分析 (0-100)
+  caution: number     // 谨慎保守 (0-100)
+}
+
+// ===== AI 性格类型 =====
+export type AIPersonalityType = 'calm' | 'aggressive' | 'humorous' | 'cautious' | 'social' | 'lone_wolf'
+
+// ===== AI 人设档案 =====
+export interface AIPersonalityProfile {
+  // 简单版配置
+  personalityType: AIPersonalityType
+  abilities: AIAbilities
+  customDescription?: string  // 用户自定义描述
+  // 高级版配置
+  customSystemPrompt?: string // 完全自定义系统提示词
+  useCustomPrompt: boolean    // 是否使用自定义提示词
+}
+
+// ===== 默认人设档案 =====
+export const DEFAULT_ABILITIES: AIAbilities = {
+  logic: 60,
+  deception: 50,
+  persuasion: 50,
+  observation: 60,
+  caution: 50,
+}
+
+export const PERSONALITY_TYPE_CONFIGS: Record<AIPersonalityType, { label: string; emoji: string; description: string; abilityMod: Partial<AIAbilities> }> = {
+  calm: { label: '冷静理性', emoji: '🧊', description: '逻辑严密，不轻易下结论', abilityMod: { logic: 15, observation: 10, caution: 10 } },
+  aggressive: { label: '激进强势', emoji: '🔥', description: '主动进攻，善于施压', abilityMod: { persuasion: 15, deception: 10, caution: -15 } },
+  humorous: { label: '幽默风趣', emoji: '😄', description: '轻松活泼，容易获得好感', abilityMod: { persuasion: 10, deception: 5, logic: -5 } },
+  cautious: { label: '谨慎保守', emoji: '🛡️', description: '不轻易表态，观察入微', abilityMod: { caution: 20, observation: 10, persuasion: -10 } },
+  social: { label: '社交达人', emoji: '🤝', description: '善于结盟，引导舆论', abilityMod: { persuasion: 20, deception: 5, logic: -5 } },
+  lone_wolf: { label: '独来独往', emoji: '🐺', description: '独立思考，不按常理出牌', abilityMod: { logic: 10, deception: 15, caution: -10 } },
+}
+
+export const DEFAULT_PERSONALITY_PROFILE: AIPersonalityProfile = {
+  personalityType: 'calm',
+  abilities: { ...DEFAULT_ABILITIES },
+  useCustomPrompt: false,
 }
 
 // ===== 赛博斗蛐蛐人设标签 =====

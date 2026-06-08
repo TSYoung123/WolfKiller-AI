@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import type { AIConfig, AIProvider, GameMode, GameSettings } from '@/engine/types'
-import { PROVIDER_CONFIGS, ROLE_PRESETS } from '@/engine/types'
+import type { AIConfig, AIProvider, GameMode, GameSettings, AIPersonalityProfile } from '@/engine/types'
+import { PROVIDER_CONFIGS, ROLE_PRESETS, DEFAULT_PERSONALITY_PROFILE } from '@/engine/types'
 
 const STORAGE_KEY = 'werewolf-ai-config'
 
@@ -8,6 +8,7 @@ interface ConfigSlot {
   id: string
   aiConfig: AIConfig
   personality?: string
+  profile?: AIPersonalityProfile
 }
 
 interface ConfigState {
@@ -17,11 +18,15 @@ interface ConfigState {
   gameSettings: GameSettings
   // 当前编辑的槽位
   activeSlotId: string | null
+  // 全局默认人设档案
+  defaultProfile: AIPersonalityProfile
 
   // Actions
   addSlot: (provider: AIProvider) => void
   removeSlot: (id: string) => void
   updateSlot: (id: string, config: Partial<AIConfig>, personality?: string) => void
+  updateSlotProfile: (id: string, profile: AIPersonalityProfile | undefined) => void
+  setDefaultProfile: (profile: AIPersonalityProfile) => void
   setGameMode: (mode: GameMode) => void
   setPlayerCount: (count: number) => void
   setActiveSlot: (id: string | null) => void
@@ -33,7 +38,7 @@ interface ConfigState {
 let slotCounter = 0
 
 // 从 localStorage 读取初始值，避免挂载后 effect 触发额外渲染
-function getInitialState(): { slots: ConfigSlot[]; gameSettings: GameSettings } {
+function getInitialState(): { slots: ConfigSlot[]; gameSettings: GameSettings; defaultProfile: AIPersonalityProfile } {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
@@ -52,6 +57,7 @@ function getInitialState(): { slots: ConfigSlot[]; gameSettings: GameSettings } 
           mode: 'human-ai',
           roleConfig: ROLE_PRESETS[8],
         },
+        defaultProfile: data.defaultProfile || { ...DEFAULT_PERSONALITY_PROFILE, abilities: { ...DEFAULT_PERSONALITY_PROFILE.abilities } },
       }
     }
   } catch {
@@ -64,6 +70,7 @@ function getInitialState(): { slots: ConfigSlot[]; gameSettings: GameSettings } 
       mode: 'human-ai',
       roleConfig: ROLE_PRESETS[8],
     },
+    defaultProfile: { ...DEFAULT_PERSONALITY_PROFILE, abilities: { ...DEFAULT_PERSONALITY_PROFILE.abilities } },
   }
 }
 
@@ -73,6 +80,7 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
   slots: initialState.slots,
   gameSettings: initialState.gameSettings,
   activeSlotId: null,
+  defaultProfile: initialState.defaultProfile,
 
   addSlot: (provider) => {
     const config = PROVIDER_CONFIGS[provider]
@@ -110,6 +118,18 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
     }))
   },
 
+  updateSlotProfile: (id, profile) => {
+    set(state => ({
+      slots: state.slots.map(s =>
+        s.id === id ? { ...s, profile: profile ? { ...profile, abilities: { ...profile.abilities } } : undefined } : s
+      ),
+    }))
+  },
+
+  setDefaultProfile: (profile) => {
+    set({ defaultProfile: { ...profile, abilities: { ...profile.abilities } } })
+  },
+
   setGameMode: (mode) => {
     set(state => ({
       gameSettings: { ...state.gameSettings, mode },
@@ -133,8 +153,8 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
   },
 
   saveToStorage: () => {
-    const { slots, gameSettings } = get()
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ slots, gameSettings }))
+    const { slots, gameSettings, defaultProfile } = get()
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ slots, gameSettings, defaultProfile }))
   },
 
   loadFromStorage: () => {
@@ -149,6 +169,7 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
             mode: 'human-ai',
             roleConfig: ROLE_PRESETS[8],
           },
+          defaultProfile: data.defaultProfile || { ...DEFAULT_PERSONALITY_PROFILE, abilities: { ...DEFAULT_PERSONALITY_PROFILE.abilities } },
         })
         // restore counter
         if (data.slots?.length) {

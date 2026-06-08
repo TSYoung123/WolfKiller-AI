@@ -18,7 +18,7 @@ export default function Config() {
   const modeParam = searchParams.get('mode') || 'human-ai'
 
   const {
-    slots, gameSettings,
+    slots, gameSettings, defaultProfile,
     setGameMode, setPlayerCount, saveToStorage
   } = useConfigStore()
 
@@ -74,6 +74,7 @@ export default function Config() {
     const aiPlayers = Array.from({ length: aiCount }, (_, i) => ({
       modelConfig: builtinConfig,
       personality: undefined,
+      profile: { ...defaultProfile, abilities: { ...defaultProfile.abilities } },
     }))
     startWithAPlayers(aiPlayers)
   }
@@ -94,6 +95,7 @@ export default function Config() {
     const aiPlayers = aiSlots.slice(0, requiredAiCount).map((slot, i) => ({
       modelConfig: slot.aiConfig,
       personality: slot.personality,
+      profile: slot.profile || { ...defaultProfile, abilities: { ...defaultProfile.abilities } },
     }))
     startWithAPlayers(aiPlayers)
   }
@@ -110,6 +112,7 @@ export default function Config() {
     const aiPlayers = Array.from({ length: aiCount }, (_, i) => ({
       modelConfig: mockConfig,
       personality: undefined,
+      profile: undefined,
     }))
     if (gameSettings.mode === 'human-ai') {
       pendingAIPlayers.current = aiPlayers

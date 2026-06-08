@@ -60,7 +60,8 @@ export async function getAIAction(
       hasAntidote: witchAntidote,
       hasPoison: witchPoison,
       tonightKilledId: store.nightResult.killedId,
-    }
+    },
+    player.profile
   )
 
   const messages = [

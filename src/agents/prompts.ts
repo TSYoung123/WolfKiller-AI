@@ -1,4 +1,5 @@
-import type { Player, GameMessage, Role, GamePhase } from '@/engine/types'
+import type { Player, GameMessage, Role, GamePhase, AIPersonalityProfile, AIAbilities } from '@/engine/types'
+import { PERSONALITY_TYPE_CONFIGS } from '@/engine/types'
 
 // ===== 基础规则（所有角色共享） =====
 const BASE_RULES = `
@@ -16,6 +17,59 @@ const BASE_RULES = `
 - 用第一人称发言
 - 发言要符合你的角色立场
 `
+
+// ===== 人设注入：根据能力和性格生成风格提示 =====
+function buildPersonalityDirective(profile?: AIPersonalityProfile): string {
+  if (!profile) return ''
+
+  // 高级模式：完全自定义提示词
+  if (profile.useCustomPrompt && profile.customSystemPrompt) {
+    return `\n\n【角色风格自定义】\n${profile.customSystemPrompt}\n`
+  }
+
+  const parts: string[] = []
+
+  // 性格类型
+  const typeConfig = PERSONALITY_TYPE_CONFIGS[profile.personalityType]
+  if (typeConfig) {
+    parts.push(`你是一个「${typeConfig.label}」风格的玩家（${typeConfig.description}）。`)
+  }
+
+  // 能力指标转行为指令
+  const abilityDesc = abilitiesToDescription(profile.abilities)
+  if (abilityDesc) {
+    parts.push(abilityDesc)
+  }
+
+  // 自定义描述
+  if (profile.customDescription) {
+    parts.push(`额外人设：${profile.customDescription}`)
+  }
+
+  if (parts.length === 0) return ''
+  return `\n\n【你的风格特点】\n${parts.join('\n')}\n`
+}
+
+function abilitiesToDescription(abilities: AIAbilities): string {
+  const descs: string[] = []
+
+  if (abilities.logic >= 80) descs.push('你擅长缜密的逻辑推理，会详细分析每个人发言中的矛盾点')
+  else if (abilities.logic <= 20) descs.push('你不太擅长逻辑推理，更多凭直觉判断')
+
+  if (abilities.deception >= 80) descs.push('你极善于伪装和欺骗，能够面不改色地说谎')
+  else if (abilities.deception <= 20) descs.push('你不擅长伪装，说话比较直白')
+
+  if (abilities.persuasion >= 80) descs.push('你有很强的说服力和煽动力，善于引导他人')
+  else if (abilities.persuasion <= 20) descs.push('你发言比较平淡，不太会说服别人')
+
+  if (abilities.observation >= 80) descs.push('你观察力极强，能注意到别人忽略的细节')
+  else if (abilities.observation <= 20) descs.push('你比较粗心，容易忽略关键信息')
+
+  if (abilities.caution >= 80) descs.push('你非常谨慎，不会轻易表态或暴露立场')
+  else if (abilities.caution <= 20) descs.push('你行事大胆，不畏惧表态')
+
+  return descs.join('；')
+}
 
 // ===== 状态注入模板 =====
 function buildGameState(
@@ -59,7 +113,8 @@ export function getVillagerPrompt(
   alivePlayers: Player[],
   deadPlayers: Player[],
   messages: GameMessage[],
-  phase: GamePhase
+  phase: GamePhase,
+  profile?: AIPersonalityProfile
 ): { system: string; user: string } {
   const system = `${BASE_RULES}
 
@@ -69,7 +124,7 @@ export function getVillagerPrompt(
 - 仔细分析每个人的发言，寻找逻辑漏洞
 - 注意谁在帮谁说话，可能存在包庇
 - 发言时展示你的推理过程，争取他人信任
-- 投票时选择你最怀疑的人`
+- 投票时选择你最怀疑的人${buildPersonalityDirective(profile)}`
 
   const user = `${buildGameState(round, alivePlayers, deadPlayers, messages, 'villager')}
 【本轮行动】现在是${phase === 'day_speech' ? '白天发言阶段，请发表你的看法' : '投票阶段，请选择你要放逐的玩家'}。`
@@ -84,7 +139,8 @@ export function getWerewolfPrompt(
   deadPlayers: Player[],
   messages: GameMessage[],
   phase: GamePhase,
-  teammates: Player[]
+  teammates: Player[],
+  profile?: AIPersonalityProfile
 ): { system: string; user: string } {
   const teammateNames = teammates
     .filter(p => p.id !== player.id)
@@ -101,7 +157,7 @@ export function getWerewolfPrompt(
 - 绝对不能暴露队友
 - 投票时跟票好人，保护队友
 - 适当带节奏，把怀疑引向好人
-- 夜晚优先击杀：预言家 > 女巫 > 发言犀利的村民`
+- 夜晚优先击杀：预言家 > 女巫 > 发言犀利的村民${buildPersonalityDirective(profile)}`
 
   const extraInfo: Record<string, any> = {}
   if (teammateNames) {
@@ -130,7 +186,8 @@ export function getSeerPrompt(
   deadPlayers: Player[],
   messages: GameMessage[],
   phase: GamePhase,
-  checkHistory: Array<{ targetId: number; isWerewolf: boolean }>
+  checkHistory: Array<{ targetId: number; isWerewolf: boolean }>,
+  profile?: AIPersonalityProfile
 ): { system: string; user: string } {
   const historyText = checkHistory.length > 0
     ? checkHistory.map(h => {
@@ -147,7 +204,7 @@ export function getSeerPrompt(
 【策略】
 - 权衡是否公开身份（公开→被信任但被盯上；隐藏→安全但无法引导投票）
 - 优先查验发言异常的人
-- 已查验结果：${historyText}`
+- 已查验结果：${historyText}${buildPersonalityDirective(profile)}`
 
   const extraInfo: Record<string, any> = {
     '已查验结果': historyText,
@@ -177,7 +234,8 @@ export function getWitchPrompt(
   phase: GamePhase,
   hasAntidote: boolean,
   hasPoison: boolean,
-  tonightKilledId: number | null
+  tonightKilledId: number | null,
+  profile?: AIPersonalityProfile
 ): { system: string; user: string } {
   const system = `${BASE_RULES}
 
@@ -189,7 +247,7 @@ export function getWitchPrompt(
 【策略】
 - 解药：第一晚可以考虑自救，或者留给预言家
 - 毒药：确认狼人身份后再使用，不要浪费
-- 发言时隐藏自己的身份，避免被狼人盯上`
+- 发言时隐藏自己的身份，避免被狼人盯上${buildPersonalityDirective(profile)}`
 
   const extraInfo: Record<string, any> = {
     '解药状态': hasAntidote ? '可用' : '已使用',
@@ -225,7 +283,8 @@ export function getHunterPrompt(
   alivePlayers: Player[],
   deadPlayers: Player[],
   messages: GameMessage[],
-  phase: GamePhase
+  phase: GamePhase,
+  profile?: AIPersonalityProfile
 ): { system: string; user: string } {
   const system = `${BASE_RULES}
 
@@ -235,7 +294,7 @@ export function getHunterPrompt(
 【策略】
 - 发言时适度展示实力，让狼人不敢轻易动你
 - 但如果太嚣张可能被狼人优先击杀
-- 如果死了，选择你最怀疑是狼人的人带走`
+- 如果死了，选择你最怀疑是狼人的人带走${buildPersonalityDirective(profile)}`
 
   let actionInstruction = ''
   if (phase === 'hunter_shot') {
@@ -266,19 +325,20 @@ export function getRolePrompt(
     hasAntidote?: boolean
     hasPoison?: boolean
     tonightKilledId?: number | null
-  }
+  },
+  profile?: AIPersonalityProfile
 ): { system: string; user: string } {
   switch (player.role) {
     case 'werewolf':
-      return getWerewolfPrompt(player, round, alivePlayers, deadPlayers, messages, phase, extraData?.teammates || [])
+      return getWerewolfPrompt(player, round, alivePlayers, deadPlayers, messages, phase, extraData?.teammates || [], profile)
     case 'seer':
-      return getSeerPrompt(player, round, alivePlayers, deadPlayers, messages, phase, extraData?.checkHistory || [])
+      return getSeerPrompt(player, round, alivePlayers, deadPlayers, messages, phase, extraData?.checkHistory || [], profile)
     case 'witch':
-      return getWitchPrompt(player, round, alivePlayers, deadPlayers, messages, phase, extraData?.hasAntidote ?? true, extraData?.hasPoison ?? true, extraData?.tonightKilledId ?? null)
+      return getWitchPrompt(player, round, alivePlayers, deadPlayers, messages, phase, extraData?.hasAntidote ?? true, extraData?.hasPoison ?? true, extraData?.tonightKilledId ?? null, profile)
     case 'hunter':
-      return getHunterPrompt(player, round, alivePlayers, deadPlayers, messages, phase)
+      return getHunterPrompt(player, round, alivePlayers, deadPlayers, messages, phase, profile)
     case 'villager':
     default:
-      return getVillagerPrompt(player, round, alivePlayers, deadPlayers, messages, phase)
+      return getVillagerPrompt(player, round, alivePlayers, deadPlayers, messages, phase, profile)
   }
 }

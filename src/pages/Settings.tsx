@@ -15,13 +15,16 @@ import { soundManager } from '@/lib/SoundManager'
 import {
   Eye, EyeOff, Plus, Trash2, Loader2, Zap, Check,
   Volume2, VolumeX, Music, Gamepad2, Server,
-  ChevronLeft, Play, RotateCcw, Globe,
+  ChevronLeft, Play, RotateCcw, Globe, Sparkles,
 } from 'lucide-react'
 import type { AIProvider } from '@/engine/types'
 import { useI18nStore, useT } from '@/store/i18nStore'
 import type { Language } from '@/store/i18nStore'
+import { AIPersonalityEditor } from '@/components/game/AIPersonalityEditor'
+import type { AIPersonalityProfile } from '@/engine/types'
+import { DEFAULT_PERSONALITY_PROFILE } from '@/engine/types'
 
-type Tab = 'audio' | 'api' | 'language'
+type Tab = 'audio' | 'api' | 'personality' | 'language'
 
 export default function Settings() {
   const navigate = useNavigate()
@@ -29,7 +32,8 @@ export default function Settings() {
 
   // API Config
   const {
-    slots, addSlot, removeSlot, updateSlot, saveToStorage,
+    slots, addSlot, removeSlot, updateSlot, updateSlotProfile, saveToStorage,
+    defaultProfile, setDefaultProfile,
   } = useConfigStore()
 
   // Audio Settings
@@ -50,7 +54,7 @@ export default function Settings() {
       return
     }
     saveToStorage()
-  }, [slots])
+  }, [slots, defaultProfile])
 
   const { language, setLanguage } = useI18nStore()
   const t = useT()
@@ -76,6 +80,7 @@ export default function Settings() {
   const tabs = [
     { key: 'audio' as const, label: t('settings.audioTab'), icon: Volume2 },
     { key: 'api' as const, label: t('settings.apiTab'), icon: Server },
+    { key: 'personality' as const, label: t('settings.personalityTab'), icon: Sparkles },
     { key: 'language' as const, label: t('settings.languageTab'), icon: Globe },
   ]
 
@@ -398,6 +403,70 @@ export default function Settings() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* ==================== AI 人设 Tab ==================== */}
+      {activeTab === 'personality' && (
+        <div className="space-y-5 animate-fade-in">
+          {/* 全局默认人设 */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Sparkles className="h-4 w-4 text-gold" />
+                {t('settings.globalProfile')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs text-muted-foreground mb-4">
+                {t('settings.globalProfileDesc')}
+              </p>
+              <AIPersonalityEditor
+                profile={defaultProfile}
+                onChange={(p: AIPersonalityProfile) => setDefaultProfile(p)}
+              />
+            </CardContent>
+          </Card>
+
+          {/* 槽位人设（仅在配置了 AI 槽位时显示） */}
+          {slots.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{t('settings.slotProfile')}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-xs text-muted-foreground mb-4">
+                  {t('settings.slotProfileDesc')}
+                </p>
+                <div className="space-y-4">
+                  {slots.map((slot, index) => (
+                    <div key={slot.id} className="p-4 border border-border/50 rounded-lg space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">
+                          {t('settings.aiSlot')} {index + 1}
+                          <span className="text-xs text-muted-foreground ml-2">
+                            ({slot.aiConfig.provider} / {slot.aiConfig.model || '?'})
+                          </span>
+                        </span>
+                        <Button
+                          variant="ghost" size="sm"
+                          onClick={() => updateSlotProfile(slot.id, undefined)}
+                          className="text-xs"
+                        >
+                          {t('settings.useGlobal')}
+                        </Button>
+                      </div>
+                      <AIPersonalityEditor
+                        profile={slot.profile || { ...defaultProfile, abilities: { ...defaultProfile.abilities } }}
+                        onChange={(p: AIPersonalityProfile) => updateSlotProfile(slot.id, p)}
+                        showAdvancedToggle={true}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
     </div>

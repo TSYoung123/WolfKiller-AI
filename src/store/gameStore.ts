@@ -128,6 +128,7 @@ export const useGameStore = create<GameStoreState>((set, get) => ({
         isAI: true,
         modelConfig: aiInfo.modelConfig,
         personality: aiInfo.personality,
+        profile: aiInfo.profile,
       })
     }
 
